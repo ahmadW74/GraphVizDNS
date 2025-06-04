@@ -1,0 +1,614 @@
+{
+    "metadata": {
+        "target_domain": "chatgpt.com",
+        "analysis_timestamp": "2025-06-02T15:55:19.222109",
+        "chain_length": 3,
+        "signed_levels": 3,
+        "chain_status": "broken",
+        "chain_message": "Chain break detected at 1 level(s)"
+    },
+    "chain_summary": {
+        "total_levels": 3,
+        "signed_levels": 3,
+        "unsigned_levels": 0,
+        "chain_complete": false,
+        "chain_breaks": [
+            {
+                "level": 1,
+                "domain": "com",
+                "reason": "Missing DS record in parent zone"
+            }
+        ],
+        "security_status": {
+            "overall_status": "broken",
+            "message": "Chain break detected at 1 level(s)",
+            "type": "error"
+        }
+    },
+    "levels": [
+        {
+            "id": "level_0",
+            "index": 0,
+            "domain": ".",
+            "display_name": "ROOT",
+            "domain_type": "root",
+            "dnssec_status": {
+                "status": "signed",
+                "message": "Root zone is signed (trust anchor)",
+                "type": "success",
+                "has_ds": false,
+                "has_dnskey": true,
+                "has_nsec": false
+            },
+            "key_hierarchy": {
+                "ksk_count": 2,
+                "zsk_count": 1,
+                "total_keys": 3,
+                "ksk_keys": [
+                    {
+                        "flags": 257,
+                        "protocol": 3,
+                        "algorithm": 8,
+                        "algorithm_name": "RSASHA256",
+                        "key_tag": 20326,
+                        "key_size": 208,
+                        "key_data_b64": "AwEAAaz/tAm8yTn4Mfeh5eyI96WSVexTBAvkMgJzkKTOiW1vkIbzxeF3+/4RgWOq\n                7HrxRixHlFlExOLAJr5emLvN7SWXgnLh4+B5xQlNVz8Og8kvArMtNROxVQuCaSnI\n                DdD5LKyWbRd2n9WGe2R8PzgCmr3EgVLrjyBxWezF0jLHwVN8efS3rCj/EWgvIWgb\n                9tarpVUDK/b58Da+sqqls3eNbuv7pr+eoZG+SrDK6nWeL3c6H5Apxz7LjVc1uTId\n                sIXxuOLYA4/ilBmSVIzuDWfdRUfhHdY6+cn8HFRm+2hM8AnXGXws9555KrUB5qih\n                ylGa8subX2Nn6UwNR1AkUTV74bU=",
+                        "key_data_hex": "03010001ACFFB409BCC939F831F7A1E5EC88F7A59255EC53040BE432027390A4CE896D6F9086F3C5E177FBFE118163AAEC7AF1462C47945944C4E2C026BE5E98BBCDED25978272E1E3E079C5094D573F0E83C92F02B32D3513B1550B826929C80DD0F92CAC966D17769FD5867B647C3F38029ABDC48152EB8F207159ECC5D232C7C1537C79F4B7AC28FF11682F21681BF6D6ABA555032BF6F9F036BEB2AAA5B3778D6EEBFBA6BF9EA191BE4AB0CAEA759E2F773A1F9029C73ECB8D5735B9321DB085F1B8E2D8038FE2941992548CEE0D67DD4547E11DD63AF9C9FC1C5466FB684CF009D7197C2CF79E792AB501E6A8A1CA519AF2CB9B5F6367E94C0D47502451357BE1B5",
+                        "is_sep": true,
+                        "ttl": 32166,
+                        "role": "KSK",
+                        "all_roles": [
+                            "KSK"
+                        ],
+                        "is_ksk": true,
+                        "is_zsk": false,
+                        "role_confidence": "high",
+                        "key_order": 2,
+                        "key_hierarchy_level": "primary"
+                    },
+                    {
+                        "flags": 257,
+                        "protocol": 3,
+                        "algorithm": 8,
+                        "algorithm_name": "RSASHA256",
+                        "key_tag": 38696,
+                        "key_size": 208,
+                        "key_data_b64": "AwEAAa96jeuknZlaeSrvyAJj6ZHv28hhOKkx3rLGXVaC6rXTsDc449/cidltpkyG\n                wCJNnOAlFNKF2jBosZBU5eeHspaQWOmOElZsjICMQMC3aeHbGiShvZsx4wMYSjH8\n                e7Vrhbu6irwCzVBApESjbUdpWWmEnhathWu1jo+siFUiRAAxm9qyJNg/wOZqqzL/\n                dL/q8PkcRU5oUKEpUge71M3ej2/7CPqpdVwuMoTvoB+ZOT4YeGyxMvHmbrxlFzGO\n                HOijtzN+u1TQNatX2XBuzZNQ1K+s2CXkPIZo7s6JgZyvaBevYtxPvYLw4z9mR7K2\n                vaF18UYH9Z9GNUUeayffKC73PYc=",
+                        "key_data_hex": "03010001AF7A8DEBA49D995A792AEFC80263E991EFDBC86138A931DEB2C65D5682EAB5D3B03738E3DFDC89D96DA64C86C0224D9CE02514D285DA3068B19054E5E787B2969058E98E12566C8C808C40C0B769E1DB1A24A1BD9B31E303184A31FC7BB56B85BBBA8ABC02CD5040A444A36D47695969849E16AD856BB58E8FAC8855224400319BDAB224D83FC0E66AAB32FF74BFEAF0F91C454E6850A1295207BBD4CDDE8F6FFB08FAA9755C2E3284EFA01F99393E18786CB132F1E66EBC6517318E1CE8A3B7337EBB54D035AB57D9706ECD9350D4AFACD825E43C8668EECE89819CAF6817AF62DC4FBD82F0E33F6647B2B6BDA175F14607F59F4635451E6B27DF282EF73D87",
+                        "is_sep": true,
+                        "ttl": 32166,
+                        "role": "KSK",
+                        "all_roles": [
+                            "KSK"
+                        ],
+                        "is_ksk": true,
+                        "is_zsk": false,
+                        "role_confidence": "high",
+                        "key_order": 3,
+                        "key_hierarchy_level": "primary"
+                    }
+                ],
+                "zsk_keys": [
+                    {
+                        "flags": 256,
+                        "protocol": 3,
+                        "algorithm": 8,
+                        "algorithm_name": "RSASHA256",
+                        "key_tag": 53148,
+                        "key_size": 208,
+                        "key_data_b64": "AwEAAbEbGCpGTDrcZTWqWWE72nphyshpRcILdzCVlBGU9Ln1Fui9kkseUOP+g5GL\n                UeVFKdTloeRTA9+EYiQdXgWXmXmuW/nGxZjAikluF/O9NzLVrr5iZnth2xu+F48n\n                rJlAgWWiMNau54NI5sZ3iVQfhFsq2pZmf43RauRPniYMShOLO7EBWWXr5glDSgZG\n                S9fSm6xHwwF+g8D4m8oanjvdCBNxXzSEKS31ibxjLifTfvwCg3y4XXcNW9U6Nu3J\n                moKUdxqpPPIkBvVQbIz4UO2FwaR13uXC03ALP1Yx2QNSS4SZlcIMtAftQR9wtCiu\n                PWQnFv4jkzWqlhp1Lmf7bcoL9yk=",
+                        "key_data_hex": "03010001B11B182A464C3ADC6535AA59613BDA7A61CAC86945C20B773095941194F4B9F516E8BD924B1E50E3FE83918B51E54529D4E5A1E45303DF8462241D5E05979979AE5BF9C6C598C08A496E17F3BD3732D5AEBE62667B61DB1BBE178F27AC99408165A230D6AEE78348E6C67789541F845B2ADA96667F8DD16AE44F9E260C4A138B3BB1015965EBE609434A06464BD7D29BAC47C3017E83C0F89BCA1A9E3BDD0813715F3484292DF589BC632E27D37EFC02837CB85D770D5BD53A36EDC99A8294771AA93CF22406F5506C8CF850ED85C1A475DEE5C2D3700B3F5631D903524B849995C20CB407ED411F70B428AE3D642716FE239335AA961A752E67FB6DCA0BF729",
+                        "is_sep": false,
+                        "ttl": 32166,
+                        "role": "ZSK",
+                        "all_roles": [
+                            "ZSK"
+                        ],
+                        "is_ksk": false,
+                        "is_zsk": true,
+                        "role_confidence": "high",
+                        "key_order": 1,
+                        "key_hierarchy_level": "signing"
+                    }
+                ]
+            },
+            "records": {
+                "ds_records": [],
+                "dnskey_records": [
+                    {
+                        "flags": 256,
+                        "protocol": 3,
+                        "algorithm": 8,
+                        "algorithm_name": "RSASHA256",
+                        "key_tag": 53148,
+                        "key_size": 208,
+                        "key_data_b64": "AwEAAbEbGCpGTDrcZTWqWWE72nphyshpRcILdzCVlBGU9Ln1Fui9kkseUOP+g5GL\n                UeVFKdTloeRTA9+EYiQdXgWXmXmuW/nGxZjAikluF/O9NzLVrr5iZnth2xu+F48n\n                rJlAgWWiMNau54NI5sZ3iVQfhFsq2pZmf43RauRPniYMShOLO7EBWWXr5glDSgZG\n                S9fSm6xHwwF+g8D4m8oanjvdCBNxXzSEKS31ibxjLifTfvwCg3y4XXcNW9U6Nu3J\n                moKUdxqpPPIkBvVQbIz4UO2FwaR13uXC03ALP1Yx2QNSS4SZlcIMtAftQR9wtCiu\n                PWQnFv4jkzWqlhp1Lmf7bcoL9yk=",
+                        "key_data_hex": "03010001B11B182A464C3ADC6535AA59613BDA7A61CAC86945C20B773095941194F4B9F516E8BD924B1E50E3FE83918B51E54529D4E5A1E45303DF8462241D5E05979979AE5BF9C6C598C08A496E17F3BD3732D5AEBE62667B61DB1BBE178F27AC99408165A230D6AEE78348E6C67789541F845B2ADA96667F8DD16AE44F9E260C4A138B3BB1015965EBE609434A06464BD7D29BAC47C3017E83C0F89BCA1A9E3BDD0813715F3484292DF589BC632E27D37EFC02837CB85D770D5BD53A36EDC99A8294771AA93CF22406F5506C8CF850ED85C1A475DEE5C2D3700B3F5631D903524B849995C20CB407ED411F70B428AE3D642716FE239335AA961A752E67FB6DCA0BF729",
+                        "is_sep": false,
+                        "ttl": 32166,
+                        "role": "ZSK",
+                        "all_roles": [
+                            "ZSK"
+                        ],
+                        "is_ksk": false,
+                        "is_zsk": true,
+                        "role_confidence": "high",
+                        "key_order": 1,
+                        "key_hierarchy_level": "signing"
+                    },
+                    {
+                        "flags": 257,
+                        "protocol": 3,
+                        "algorithm": 8,
+                        "algorithm_name": "RSASHA256",
+                        "key_tag": 20326,
+                        "key_size": 208,
+                        "key_data_b64": "AwEAAaz/tAm8yTn4Mfeh5eyI96WSVexTBAvkMgJzkKTOiW1vkIbzxeF3+/4RgWOq\n                7HrxRixHlFlExOLAJr5emLvN7SWXgnLh4+B5xQlNVz8Og8kvArMtNROxVQuCaSnI\n                DdD5LKyWbRd2n9WGe2R8PzgCmr3EgVLrjyBxWezF0jLHwVN8efS3rCj/EWgvIWgb\n                9tarpVUDK/b58Da+sqqls3eNbuv7pr+eoZG+SrDK6nWeL3c6H5Apxz7LjVc1uTId\n                sIXxuOLYA4/ilBmSVIzuDWfdRUfhHdY6+cn8HFRm+2hM8AnXGXws9555KrUB5qih\n                ylGa8subX2Nn6UwNR1AkUTV74bU=",
+                        "key_data_hex": "03010001ACFFB409BCC939F831F7A1E5EC88F7A59255EC53040BE432027390A4CE896D6F9086F3C5E177FBFE118163AAEC7AF1462C47945944C4E2C026BE5E98BBCDED25978272E1E3E079C5094D573F0E83C92F02B32D3513B1550B826929C80DD0F92CAC966D17769FD5867B647C3F38029ABDC48152EB8F207159ECC5D232C7C1537C79F4B7AC28FF11682F21681BF6D6ABA555032BF6F9F036BEB2AAA5B3778D6EEBFBA6BF9EA191BE4AB0CAEA759E2F773A1F9029C73ECB8D5735B9321DB085F1B8E2D8038FE2941992548CEE0D67DD4547E11DD63AF9C9FC1C5466FB684CF009D7197C2CF79E792AB501E6A8A1CA519AF2CB9B5F6367E94C0D47502451357BE1B5",
+                        "is_sep": true,
+                        "ttl": 32166,
+                        "role": "KSK",
+                        "all_roles": [
+                            "KSK"
+                        ],
+                        "is_ksk": true,
+                        "is_zsk": false,
+                        "role_confidence": "high",
+                        "key_order": 2,
+                        "key_hierarchy_level": "primary"
+                    },
+                    {
+                        "flags": 257,
+                        "protocol": 3,
+                        "algorithm": 8,
+                        "algorithm_name": "RSASHA256",
+                        "key_tag": 38696,
+                        "key_size": 208,
+                        "key_data_b64": "AwEAAa96jeuknZlaeSrvyAJj6ZHv28hhOKkx3rLGXVaC6rXTsDc449/cidltpkyG\n                wCJNnOAlFNKF2jBosZBU5eeHspaQWOmOElZsjICMQMC3aeHbGiShvZsx4wMYSjH8\n                e7Vrhbu6irwCzVBApESjbUdpWWmEnhathWu1jo+siFUiRAAxm9qyJNg/wOZqqzL/\n                dL/q8PkcRU5oUKEpUge71M3ej2/7CPqpdVwuMoTvoB+ZOT4YeGyxMvHmbrxlFzGO\n                HOijtzN+u1TQNatX2XBuzZNQ1K+s2CXkPIZo7s6JgZyvaBevYtxPvYLw4z9mR7K2\n                vaF18UYH9Z9GNUUeayffKC73PYc=",
+                        "key_data_hex": "03010001AF7A8DEBA49D995A792AEFC80263E991EFDBC86138A931DEB2C65D5682EAB5D3B03738E3DFDC89D96DA64C86C0224D9CE02514D285DA3068B19054E5E787B2969058E98E12566C8C808C40C0B769E1DB1A24A1BD9B31E303184A31FC7BB56B85BBBA8ABC02CD5040A444A36D47695969849E16AD856BB58E8FAC8855224400319BDAB224D83FC0E66AAB32FF74BFEAF0F91C454E6850A1295207BBD4CDDE8F6FFB08FAA9755C2E3284EFA01F99393E18786CB132F1E66EBC6517318E1CE8A3B7337EBB54D035AB57D9706ECD9350D4AFACD825E43C8668EECE89819CAF6817AF62DC4FBD82F0E33F6647B2B6BDA175F14607F59F4635451E6B27DF282EF73D87",
+                        "is_sep": true,
+                        "ttl": 32166,
+                        "role": "KSK",
+                        "all_roles": [
+                            "KSK"
+                        ],
+                        "is_ksk": true,
+                        "is_zsk": false,
+                        "role_confidence": "high",
+                        "key_order": 3,
+                        "key_hierarchy_level": "primary"
+                    }
+                ],
+                "ns_records": [
+                    "a.root-servers.net.",
+                    "d.root-servers.net.",
+                    "e.root-servers.net.",
+                    "m.root-servers.net.",
+                    "g.root-servers.net.",
+                    "j.root-servers.net.",
+                    "b.root-servers.net.",
+                    "c.root-servers.net.",
+                    "f.root-servers.net.",
+                    "h.root-servers.net.",
+                    "i.root-servers.net.",
+                    "k.root-servers.net.",
+                    "l.root-servers.net."
+                ],
+                "soa_record": {
+                    "mname": "a.root-servers.net.",
+                    "rname": "nstld.verisign-grs.com.",
+                    "serial": 2025060200,
+                    "refresh": 1800,
+                    "retry": 900,
+                    "expire": 604800,
+                    "minimum": 86400,
+                    "ttl": 75884
+                },
+                "nsec_records": []
+            },
+            "delegation": {
+                "delegates_to": "com",
+                "delegated_from": null
+            },
+            "chain_break_info": {
+                "has_chain_break": false,
+                "break_reason": null,
+                "nsec_evidence": null
+            }
+        },
+        {
+            "id": "level_1",
+            "index": 1,
+            "domain": "com",
+            "display_name": "com",
+            "domain_type": "tld",
+            "dnssec_status": {
+                "status": "signed",
+                "message": "Fully signed with DNSSEC",
+                "type": "success",
+                "has_ds": true,
+                "has_dnskey": true,
+                "has_nsec": false
+            },
+            "key_hierarchy": {
+                "ksk_count": 1,
+                "zsk_count": 1,
+                "total_keys": 2,
+                "ksk_keys": [
+                    {
+                        "flags": 257,
+                        "protocol": 3,
+                        "algorithm": 13,
+                        "algorithm_name": "ECDSAP256SHA256",
+                        "key_tag": 19718,
+                        "key_size": 256,
+                        "key_data_b64": "tx8EZRAd2+K/DJRV0S+hbBzaRPS/G6JVNBitHzqpsGlz8huE61Ms9ANe6NSDLKJt\n                iTBqfTJWDAywEp1FCsEINQ==",
+                        "key_data_hex": "B71F0465101DDBE2BF0C9455D12FA16C1CDA44F4BF1BA2553418AD1F3AA9B06973F21B84EB532CF4035EE8D4832CA26D89306A7D32560C0CB0129D450AC10835",
+                        "is_sep": true,
+                        "ttl": 4706,
+                        "role": "KSK",
+                        "all_roles": [
+                            "KSK"
+                        ],
+                        "is_ksk": true,
+                        "is_zsk": false,
+                        "role_confidence": "high",
+                        "key_order": 2,
+                        "key_hierarchy_level": "primary"
+                    }
+                ],
+                "zsk_keys": [
+                    {
+                        "flags": 256,
+                        "protocol": 3,
+                        "algorithm": 13,
+                        "algorithm_name": "ECDSAP256SHA256",
+                        "key_tag": 40097,
+                        "key_size": 256,
+                        "key_data_b64": "/L1iK7+vk9/xnk/lIfYbxgKsMts1KA09X/hNRRqolimHaVj9W+Qng/+irvLjbkyR\n                KENf00mzPzGvNLRrDTTMqw==",
+                        "key_data_hex": "FCBD622BBFAF93DFF19E4FE521F61BC602AC32DB35280D3D5FF84D451AA89629876958FD5BE42783FFA2AEF2E36E4C9128435FD349B33F31AF34B46B0D34CCAB",
+                        "is_sep": false,
+                        "ttl": 4706,
+                        "role": "ZSK",
+                        "all_roles": [
+                            "ZSK"
+                        ],
+                        "is_ksk": false,
+                        "is_zsk": true,
+                        "role_confidence": "high",
+                        "key_order": 1,
+                        "key_hierarchy_level": "signing"
+                    }
+                ]
+            },
+            "records": {
+                "ds_records": [
+                    {
+                        "key_tag": 19718,
+                        "algorithm": 13,
+                        "algorithm_name": "ECDSAP256SHA256",
+                        "digest_type": 2,
+                        "digest_type_name": "SHA-256",
+                        "digest": "8ACBB0CD28F41250A80A491389424D341522D946B0DA0C0291F2D3D771D7805A",
+                        "ttl": 37709
+                    }
+                ],
+                "dnskey_records": [
+                    {
+                        "flags": 256,
+                        "protocol": 3,
+                        "algorithm": 13,
+                        "algorithm_name": "ECDSAP256SHA256",
+                        "key_tag": 40097,
+                        "key_size": 256,
+                        "key_data_b64": "/L1iK7+vk9/xnk/lIfYbxgKsMts1KA09X/hNRRqolimHaVj9W+Qng/+irvLjbkyR\n                KENf00mzPzGvNLRrDTTMqw==",
+                        "key_data_hex": "FCBD622BBFAF93DFF19E4FE521F61BC602AC32DB35280D3D5FF84D451AA89629876958FD5BE42783FFA2AEF2E36E4C9128435FD349B33F31AF34B46B0D34CCAB",
+                        "is_sep": false,
+                        "ttl": 4706,
+                        "role": "ZSK",
+                        "all_roles": [
+                            "ZSK"
+                        ],
+                        "is_ksk": false,
+                        "is_zsk": true,
+                        "role_confidence": "high",
+                        "key_order": 1,
+                        "key_hierarchy_level": "signing"
+                    },
+                    {
+                        "flags": 257,
+                        "protocol": 3,
+                        "algorithm": 13,
+                        "algorithm_name": "ECDSAP256SHA256",
+                        "key_tag": 19718,
+                        "key_size": 256,
+                        "key_data_b64": "tx8EZRAd2+K/DJRV0S+hbBzaRPS/G6JVNBitHzqpsGlz8huE61Ms9ANe6NSDLKJt\n                iTBqfTJWDAywEp1FCsEINQ==",
+                        "key_data_hex": "B71F0465101DDBE2BF0C9455D12FA16C1CDA44F4BF1BA2553418AD1F3AA9B06973F21B84EB532CF4035EE8D4832CA26D89306A7D32560C0CB0129D450AC10835",
+                        "is_sep": true,
+                        "ttl": 4706,
+                        "role": "KSK",
+                        "all_roles": [
+                            "KSK"
+                        ],
+                        "is_ksk": true,
+                        "is_zsk": false,
+                        "role_confidence": "high",
+                        "key_order": 2,
+                        "key_hierarchy_level": "primary"
+                    }
+                ],
+                "ns_records": [
+                    "e.gtld-servers.net.",
+                    "b.gtld-servers.net.",
+                    "g.gtld-servers.net.",
+                    "a.gtld-servers.net.",
+                    "i.gtld-servers.net.",
+                    "c.gtld-servers.net.",
+                    "k.gtld-servers.net.",
+                    "d.gtld-servers.net.",
+                    "f.gtld-servers.net.",
+                    "j.gtld-servers.net.",
+                    "l.gtld-servers.net.",
+                    "h.gtld-servers.net.",
+                    "m.gtld-servers.net."
+                ],
+                "soa_record": {
+                    "mname": "a.gtld-servers.net.",
+                    "rname": "nstld.verisign-grs.com.",
+                    "serial": 1748861097,
+                    "refresh": 1800,
+                    "retry": 900,
+                    "expire": 604800,
+                    "minimum": 900,
+                    "ttl": 302
+                },
+                "nsec_records": []
+            },
+            "delegation": {
+                "delegates_to": "chatgpt.com",
+                "delegated_from": "ROOT"
+            },
+            "chain_break_info": {
+                "has_chain_break": true,
+                "break_reason": "Missing DS record in parent zone",
+                "nsec_evidence": null
+            }
+        },
+        {
+            "id": "level_2",
+            "index": 2,
+            "domain": "chatgpt.com",
+            "display_name": "chatgpt.com",
+            "domain_type": "target",
+            "dnssec_status": {
+                "status": "partial",
+                "message": "Has DNSKEY but no DS record (unsigned delegation)",
+                "type": "warning",
+                "has_ds": false,
+                "has_dnskey": true,
+                "has_nsec": false
+            },
+            "key_hierarchy": {
+                "ksk_count": 1,
+                "zsk_count": 1,
+                "total_keys": 2,
+                "ksk_keys": [
+                    {
+                        "flags": 257,
+                        "protocol": 3,
+                        "algorithm": 13,
+                        "algorithm_name": "ECDSAP256SHA256",
+                        "key_tag": 2371,
+                        "key_size": 256,
+                        "key_data_b64": "mdsswUyr3DPW132mOi8V9xESWE8jTo0dxCjjnopKl+GqJxpVXckHAeF+KkxLbxIL\n                fDLUT0rAK9iUzy1L53eKGQ==",
+                        "key_data_hex": "99DB2CC14CABDC33D6D77DA63A2F15F71112584F234E8D1DC428E39E8A4A97E1AA271A555DC90701E17E2A4C4B6F120B7C32D44F4AC02BD894CF2D4BE7778A19",
+                        "is_sep": true,
+                        "ttl": 3600,
+                        "role": "KSK",
+                        "all_roles": [
+                            "KSK"
+                        ],
+                        "is_ksk": true,
+                        "is_zsk": false,
+                        "role_confidence": "high",
+                        "key_order": 2,
+                        "key_hierarchy_level": "primary"
+                    }
+                ],
+                "zsk_keys": [
+                    {
+                        "flags": 256,
+                        "protocol": 3,
+                        "algorithm": 13,
+                        "algorithm_name": "ECDSAP256SHA256",
+                        "key_tag": 34505,
+                        "key_size": 256,
+                        "key_data_b64": "oJMRESz5E4gYzS/q6XDrvU1qMPYIjCWzJaOau8XNEZeqCYKD5ar0IRd8KqXXFJkq\n                mVfRvMGPmM1x8fGAa2XhSA==",
+                        "key_data_hex": "A09311112CF9138818CD2FEAE970EBBD4D6A30F6088C25B325A39ABBC5CD1197AA098283E5AAF421177C2AA5D714992A9957D1BCC18F98CD71F1F1806B65E148",
+                        "is_sep": false,
+                        "ttl": 3600,
+                        "role": "ZSK",
+                        "all_roles": [
+                            "ZSK"
+                        ],
+                        "is_ksk": false,
+                        "is_zsk": true,
+                        "role_confidence": "high",
+                        "key_order": 1,
+                        "key_hierarchy_level": "signing"
+                    }
+                ]
+            },
+            "records": {
+                "ds_records": [],
+                "dnskey_records": [
+                    {
+                        "flags": 256,
+                        "protocol": 3,
+                        "algorithm": 13,
+                        "algorithm_name": "ECDSAP256SHA256",
+                        "key_tag": 34505,
+                        "key_size": 256,
+                        "key_data_b64": "oJMRESz5E4gYzS/q6XDrvU1qMPYIjCWzJaOau8XNEZeqCYKD5ar0IRd8KqXXFJkq\n                mVfRvMGPmM1x8fGAa2XhSA==",
+                        "key_data_hex": "A09311112CF9138818CD2FEAE970EBBD4D6A30F6088C25B325A39ABBC5CD1197AA098283E5AAF421177C2AA5D714992A9957D1BCC18F98CD71F1F1806B65E148",
+                        "is_sep": false,
+                        "ttl": 3600,
+                        "role": "ZSK",
+                        "all_roles": [
+                            "ZSK"
+                        ],
+                        "is_ksk": false,
+                        "is_zsk": true,
+                        "role_confidence": "high",
+                        "key_order": 1,
+                        "key_hierarchy_level": "signing"
+                    },
+                    {
+                        "flags": 257,
+                        "protocol": 3,
+                        "algorithm": 13,
+                        "algorithm_name": "ECDSAP256SHA256",
+                        "key_tag": 2371,
+                        "key_size": 256,
+                        "key_data_b64": "mdsswUyr3DPW132mOi8V9xESWE8jTo0dxCjjnopKl+GqJxpVXckHAeF+KkxLbxIL\n                fDLUT0rAK9iUzy1L53eKGQ==",
+                        "key_data_hex": "99DB2CC14CABDC33D6D77DA63A2F15F71112584F234E8D1DC428E39E8A4A97E1AA271A555DC90701E17E2A4C4B6F120B7C32D44F4AC02BD894CF2D4BE7778A19",
+                        "is_sep": true,
+                        "ttl": 3600,
+                        "role": "KSK",
+                        "all_roles": [
+                            "KSK"
+                        ],
+                        "is_ksk": true,
+                        "is_zsk": false,
+                        "role_confidence": "high",
+                        "key_order": 2,
+                        "key_hierarchy_level": "primary"
+                    }
+                ],
+                "ns_records": [
+                    "savanna.ns.cloudflare.com.",
+                    "hassan.ns.cloudflare.com."
+                ],
+                "soa_record": {
+                    "mname": "hassan.ns.cloudflare.com.",
+                    "rname": "dns.cloudflare.com.",
+                    "serial": 2374228055,
+                    "refresh": 10000,
+                    "retry": 2400,
+                    "expire": 604800,
+                    "minimum": 1800,
+                    "ttl": 1800
+                },
+                "nsec_records": []
+            },
+            "delegation": {
+                "delegates_to": null,
+                "delegated_from": "com"
+            },
+            "chain_break_info": {
+                "has_chain_break": false,
+                "break_reason": null,
+                "nsec_evidence": null
+            }
+        }
+    ],
+    "relationships": [
+        {
+            "id": "rel_0",
+            "from": "level_0",
+            "to": "level_1",
+            "from_domain": "ROOT",
+            "to_domain": "com",
+            "type": "delegation",
+            "status": "valid"
+        },
+        {
+            "id": "rel_1",
+            "from": "level_1",
+            "to": "level_2",
+            "from_domain": "com",
+            "to_domain": "chatgpt.com",
+            "type": "delegation",
+            "status": "valid"
+        }
+    ],
+    "graph_data": {
+        "nodes": [
+            {
+                "id": "level_0",
+                "label": "ROOT",
+                "domain": ".",
+                "type": "root",
+                "status": "signed",
+                "status_type": "success",
+                "has_ds": false,
+                "has_dnskey": true,
+                "has_nsec": false,
+                "ds_count": 0,
+                "dnskey_count": 3,
+                "ns_count": 13,
+                "nsec_count": 0,
+                "ksk_count": 2,
+                "zsk_count": 1,
+                "has_chain_break": false
+            },
+            {
+                "id": "level_1",
+                "label": "com",
+                "domain": "com",
+                "type": "tld",
+                "status": "signed",
+                "status_type": "success",
+                "has_ds": true,
+                "has_dnskey": true,
+                "has_nsec": false,
+                "ds_count": 1,
+                "dnskey_count": 2,
+                "ns_count": 13,
+                "nsec_count": 0,
+                "ksk_count": 1,
+                "zsk_count": 1,
+                "has_chain_break": true
+            },
+            {
+                "id": "level_2",
+                "label": "chatgpt.com",
+                "domain": "chatgpt.com",
+                "type": "target",
+                "status": "partial",
+                "status_type": "warning",
+                "has_ds": false,
+                "has_dnskey": true,
+                "has_nsec": false,
+                "ds_count": 0,
+                "dnskey_count": 2,
+                "ns_count": 2,
+                "nsec_count": 0,
+                "ksk_count": 1,
+                "zsk_count": 1,
+                "has_chain_break": false
+            }
+        ],
+        "edges": [
+            {
+                "id": "rel_0",
+                "source": "level_0",
+                "target": "level_1",
+                "label": "ROOT \u2192 com",
+                "type": "delegation",
+                "status": "valid",
+                "animated": true
+            },
+            {
+                "id": "rel_1",
+                "source": "level_1",
+                "target": "level_2",
+                "label": "com \u2192 chatgpt.com",
+                "type": "delegation",
+                "status": "valid",
+                "animated": true
+            }
+        ]
+    },
+    "success": true
+}
