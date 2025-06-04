@@ -11,8 +11,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import Graphviz from "graphviz-react";
 import DNSSECVisualizer from "./DNSGraph.jsx";
+import SampleGraph from "./SampleGraph.jsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function App() {
   // UI state
@@ -102,34 +102,6 @@ export default function App() {
     }
   };
 
-  // Graphviz DOT string for DNS chain visualization
-  const dotString = `
-    digraph G {
-      node [shape=box style=filled];
-      // Root DNSKEYs
-      root0 [label="root DNSKEY 0" fillcolor=green];
-      root1 [label="root DNSKEY 1" fillcolor=green];
-      root2 [label="root DNSKEY 2" fillcolor=white];
-
-      // .com chain
-      com_ds [label="com DS" fillcolor=green];
-      com_dnskey0 [label="com DNSKEY 0" fillcolor=green];
-      com_dnskey1 [label="com DNSKEY 1" fillcolor=green];
-
-      // google.com and mail.google.com
-      google [label="google.com" fillcolor=white];
-      mail [label="mail.google.com" fillcolor=white];
-
-      // Edges
-      root0 -> root1;
-      root0 -> root2;
-      root1 -> com_ds;
-      com_ds -> com_dnskey0;
-      com_dnskey0 -> com_dnskey1;
-      com_dnskey1 -> google [color=red];
-      google -> mail;
-    }
-  `;
 
   // Slider tooltip label
   const selectedDate = new Date();
@@ -330,10 +302,9 @@ export default function App() {
                     value="GraphViz"
                     className="w-full min-h-[450px] pt-14"
                   >
-                    <Graphviz
-                      dot={dotString}
-                      options={{ engine: "dot" }}
-                      style={{ width: "100%" }} /* prevents horizontal shrink */
+                    <SampleGraph
+                      domain={currentDomain}
+                      refreshTrigger={refreshTrigger}
                     />
                   </TabsContent>
                 </Tabs>
