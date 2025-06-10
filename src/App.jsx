@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RotateCcw, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,8 +34,56 @@ export default function App() {
   const [signupName, setSignupName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
-  const [signupMessage, setSignupMessage] = useState("");
-  const [signupMessageType, setSignupMessageType] = useState("");
+const [signupMessage, setSignupMessage] = useState("");
+const [signupMessageType, setSignupMessageType] = useState("");
+
+  // Google OAuth initialization
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.onload = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: "YOUR_GOOGLE_CLIENT_ID",
+          callback: (response) => handleGoogleCredential(response.credential),
+        });
+        const loginDiv = document.getElementById("googleSignIn");
+        if (loginDiv) {
+          window.google.accounts.id.renderButton(loginDiv, {
+            theme: "outline",
+            size: "large",
+          });
+        }
+        const signupDiv = document.getElementById("googleSignup");
+        if (signupDiv) {
+          window.google.accounts.id.renderButton(signupDiv, {
+            theme: "outline",
+            size: "large",
+          });
+        }
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
+
+  const handleGoogleCredential = async (credential) => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/google-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: credential }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsername(data.success);
+        setLoginOpen(false);
+        setSignupOpen(false);
+      }
+    } catch (e) {
+      console.error("Google auth failed", e);
+    }
+  };
 
   const handleLogin = async () => {
     setLoginError("");
@@ -138,6 +186,7 @@ export default function App() {
             <Button className="w-full h-12 text-lg" onClick={handleLogin}>
               Log in
             </Button>
+            <div id="googleSignIn" className="flex justify-center"></div>
             <p className="text-sm text-center text-neutral-400">
               Don't have an account?{" "}
               <button
@@ -198,6 +247,7 @@ export default function App() {
             <Button className="w-full h-12 text-lg" onClick={handleSignup}>
               Sign up
             </Button>
+            <div id="googleSignup" className="flex justify-center"></div>
             <p className="text-sm text-center text-neutral-400">
               Already have an account?{" "}
               <button

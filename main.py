@@ -1,6 +1,10 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+import os
 import dns.resolver
 import dns.name
 import dns.rdatatype
@@ -23,6 +27,7 @@ data=[]
 with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "r") as file:
     data =[line.strip().split(":") for line in file.readlines()]
     print(data)
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
 class DNSSECAnalyzer:
     def __init__(self):
@@ -676,5 +681,35 @@ def signup(user:str,passw:str,name:str):
     data.append(array_entry)
     with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "a") as file:
         file.write(f"\n{file_entry}")
+
+class TokenPayload(BaseModel):
+    token: str
+
+@app.post("/google-auth")
+def google_auth(payload: TokenPayload):
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=500, detail="Google client ID not configured")
+    try:
+        idinfo = id_token.verify_oauth2_token(
+            payload.token,
+            google_requests.Request(),
+            GOOGLE_CLIENT_ID,
+        )
+        email = idinfo.get("email")
+        name = idinfo.get("name", email)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid token")
+
+    for entry in data:
+        if len(entry) > 1 and entry[1] == email:
+            return {"success": entry[0], "email": email}
+
+    file_entry = f"{name}:{email}:"
+    array_entry = [name, email, ""]
+    data.append(array_entry)
+    with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "a") as file:
+        file.write(f"\n{file_entry}")
+
+    return {"success": name, "email": email}
     
 #uvicorn main:app --reload
