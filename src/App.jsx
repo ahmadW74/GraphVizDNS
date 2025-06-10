@@ -11,15 +11,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import DNSSECVisualizer from "./DNSGraph.jsx";
 import SampleGraph from "./SampleGraph.jsx";
+import DNSSECVisualizer from "./DNSGraph.jsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function App() {
   // UI state
   const [domain, setDomain] = useState("");
   const [currentDomain, setCurrentDomain] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [inputDomain, setInputDomain] = useState("");
   const MAX_DAYS = 1825;
   const [timeline, setTimeline] = useState(MAX_DAYS);
   const [loginOpen, setLoginOpen] = useState(true);
@@ -36,9 +35,8 @@ export default function App() {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupMessage, setSignupMessage] = useState("");
-  const [signupMessageType, setSignupMessageType] = useState(""); // "success" or "error"
+  const [signupMessageType, setSignupMessageType] = useState("");
 
-  // Login handler
   const handleLogin = async () => {
     setLoginError("");
     try {
@@ -63,7 +61,6 @@ export default function App() {
     }
   };
 
-  // Signup handler
   const handleSignup = async () => {
     setSignupMessage("");
     try {
@@ -73,7 +70,6 @@ export default function App() {
       if (res.ok) {
         setSignupMessageType("success");
         setSignupMessage("Signup successful! Redirecting to login...");
-        // After a brief pause, close signup and open login
         setTimeout(() => {
           setSignupOpen(false);
           setLoginOpen(true);
@@ -89,7 +85,7 @@ export default function App() {
     }
   };
 
-  // Data fetching logic
+  //graph logic
   const handleAnalyze = () => {
     if (domain.trim()) {
       setCurrentDomain(domain.trim());
@@ -102,8 +98,7 @@ export default function App() {
     }
   };
 
-
-  // Slider tooltip label
+  //tooltip
   const selectedDate = new Date();
   selectedDate.setDate(selectedDate.getDate() - (MAX_DAYS - timeline));
   const tooltipLabel =
@@ -159,7 +154,7 @@ export default function App() {
         </DialogContent>
       </Dialog>
 
-      {/* Signup dialog */}
+      {/* Signup*/}
       <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
         <DialogContent className="sm:max-w-lg text-base space-y-6">
           <DialogHeader>
@@ -227,7 +222,7 @@ export default function App() {
           </h1>
           <div className="flex items-center space-x-2">
             <User className="h-6 w-6 text-neutral-100" />
-            <span className="text-lg">{username}</span>
+            <p className="text-lg text-white">{username}</p>
           </div>
         </div>
       </header>
@@ -254,7 +249,7 @@ export default function App() {
             </Button>
           </div>
 
-          {/* Timeline slider */}
+          {/*Timeline*/}
           <div className="relative mb-6 h-6 lg:h-8">
             <div className="absolute -top-10 left-0 w-full pointer-events-none">
               <div
@@ -273,45 +268,19 @@ export default function App() {
               className="h-full"
             />
           </div>
-          {/* Graphviz rendering card */}
+          {/*rendering card */}
           <div className="relative">
             <Card className="w-full bg-neutral-900 border-neutral-800">
-              {/* Make the inner area relative so we can absolutely position the tab buttons */}
               <CardContent className="relative px-10 py-10 lg:px-14 lg:py-14">
-                {/* Give Tabs the full available space */}
-                <Tabs defaultValue="Non-GraphViz" className="w-full h-full">
-                  {/* ---- Tab selector (now top-left) ---- */}
-                  <TabsList className="absolute top-4 left-4 flex gap-2">
-                    <TabsTrigger value="Non-GraphViz">Non-GraphViz</TabsTrigger>
-                    <TabsTrigger value="GraphViz">GraphViz</TabsTrigger>
-                  </TabsList>
-
-                  {/* ---- Non-GraphViz panel ---- */}
-                  <TabsContent
-                    value="Non-GraphViz"
-                    className="w-full min-h-[450px] pt-14" /* pt-14 pushes content below the buttons */
-                  >
-                    <DNSSECVisualizer
-                      domain={currentDomain}
-                      refreshTrigger={refreshTrigger}
-                    />
-                  </TabsContent>
-
-                  {/* ---- GraphViz panel ---- */}
-                  <TabsContent
-                    value="GraphViz"
-                    className="w-full min-h-[450px] pt-14"
-                  >
-                    <SampleGraph
-                      domain={currentDomain}
-                      refreshTrigger={refreshTrigger}
-                    />
-                  </TabsContent>
-                </Tabs>
+                <SampleGraph
+                  domain={currentDomain}
+                  refreshTrigger={refreshTrigger}
+                  style={{ width: "300%" }}
+                />
               </CardContent>
             </Card>
 
-            {/* Reload button (unchanged) */}
+            {/* Reload button*/}
             <Button
               size="icon"
               variant="secondary"
@@ -327,3 +296,4 @@ export default function App() {
     </div>
   );
 }
+
