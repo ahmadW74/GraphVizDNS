@@ -14,6 +14,7 @@ import {
 import SampleGraph from "./SampleGraph.jsx";
 import DNSSECVisualizer from "./DNSGraph.jsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 export default function App() {
   // UI state
   const [domain, setDomain] = useState("");
@@ -45,7 +46,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
     script.onload = () => {
       if (window.google) {
         window.google.accounts.id.initialize({
-          client_id: "YOUR_GOOGLE_CLIENT_ID",
+          client_id: GOOGLE_CLIENT_ID,
           callback: (response) => handleGoogleCredential(response.credential),
         });
         const loginDiv = document.getElementById("googleSignIn");

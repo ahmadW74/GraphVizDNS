@@ -27,8 +27,9 @@ data=[]
 with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "r") as file:
     data =[line.strip().split(":") for line in file.readlines()]
     print(data)
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+# Google OAuth Client ID from environment variable
 
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 class DNSSECAnalyzer:
     def __init__(self):
         self.resolver = dns.resolver.Resolver()
@@ -712,4 +713,5 @@ def google_auth(payload: TokenPayload):
 
     return {"success": name, "email": email}
     
-#uvicorn main:app --reload
+# uvicorn main:app --reload
+
