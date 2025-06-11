@@ -343,6 +343,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
                 <SampleGraph
                   domain={currentDomain}
                   refreshTrigger={refreshTrigger}
+                  theme={theme}
                 />
               </CardContent>
             </Card>
