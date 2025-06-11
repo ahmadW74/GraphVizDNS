@@ -132,8 +132,11 @@ const SampleGraph = ({ domain, refreshTrigger }) => {
   }
 
   return (
-    <div className="w-full overflow-x-auto">
-      <Graphviz dot={dot} options={{ fit: true }} />
+    <div className="w-full overflow-x-auto flex justify-center">
+      <Graphviz
+        dot={dot}
+        options={{ fit: true, width: 800, height: 600, scale: 1.5 }}
+      />
     </div>
   );
 };
