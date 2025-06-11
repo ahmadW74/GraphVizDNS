@@ -28,21 +28,51 @@ const SampleGraph = ({ domain, refreshTrigger }) => {
     };
 
     let dotStr =
-      "digraph DNSSEC {\n  rankdir=TB;\n  node [shape=box style=filled fontname=Helvetica];\n";
+      "digraph DNSSEC {\n" +
+      "  rankdir=LR;\n" +
+      "  node [shape=box style=filled fontname=Helvetica fontsize=16 width=2 height=1];\n" +
+      "  edge [penwidth=2];\n";
 
     // Create clusters for each level
     data.levels.forEach((level, idx) => {
       const fill = statusColor(level.dnssec_status?.status);
       const ksk = level.records?.dnskey_records?.find((k) => k.is_ksk);
       const zsk = level.records?.dnskey_records?.find((k) => k.is_zsk);
-      const kskTip = ksk
-        ? `alg: ${ksk.algorithm_name}\\nsize: ${ksk.key_size}\\ntag: ${ksk.key_tag}`
-        : "no KSK";
-      const zskTip = zsk
-        ? `alg: ${zsk.algorithm_name}\\nsize: ${zsk.key_size}\\ntag: ${zsk.key_tag}`
-        : "no ZSK";
+      const kskLabel = ksk
+        ? `KSK\\n${ksk.algorithm_name}\\ntag ${ksk.key_tag}`
+        : "KSK";
+      const zskLabel = zsk
+        ? `ZSK\\n${zsk.algorithm_name}\\ntag ${zsk.key_tag}`
+        : "ZSK";
 
-      dotStr += `  subgraph cluster_${idx} {\n    label="${level.display_name}";\n    style=rounded;\n    ksk_${idx} [label="KSK" fillcolor="${fill}" tooltip="${kskTip}"];\n    zsk_${idx} [label="ZSK" fillcolor="${fill}" tooltip="${zskTip}"];\n    ksk_${idx} -> zsk_${idx};\n  }\n`;
+      dotStr += `  subgraph cluster_${idx} {\n    label="${level.display_name}";\n    style=rounded;\n`;
+
+      if (idx === 0) {
+        dotStr += `    anchor_${idx} [label="Anchor KSK" fillcolor="${fill}"];\n`;
+      }
+
+      dotStr += `    ksk_${idx} [label="${kskLabel}" fillcolor="${fill}"];\n`;
+      dotStr += `    zsk_${idx} [label="${zskLabel}" fillcolor="${fill}"];\n`;
+
+      if (idx === 0) {
+        dotStr += `    anchor_${idx} -> ksk_${idx};\n`;
+      }
+
+      dotStr += `    ksk_${idx} -> zsk_${idx};\n`;
+
+      if (idx < data.levels.length - 1) {
+        const child = data.levels[idx + 1];
+        const dsRec =
+          level.records?.ds_records?.[0] || child.records?.ds_records?.[0];
+        const dsColor = dsRec ? "white" : "lightgray";
+        const dsLabel = dsRec
+          ? `DS\\n${dsRec.algorithm_name}\\ntag ${dsRec.key_tag}`
+          : "DS";
+        const dsId = `ds_${idx}_${idx + 1}`;
+        dotStr += `    ${dsId} [label="${dsLabel}" shape=ellipse style=filled fillcolor="${dsColor}"];\n`;
+      }
+
+      dotStr += "  }\n";
     });
 
     // Connect levels using DS records
@@ -50,15 +80,9 @@ const SampleGraph = ({ domain, refreshTrigger }) => {
       const parent = data.levels[i];
       const child = data.levels[i + 1];
 
-      // DS may exist in the parent or in the child zone
-      const dsRec = parent.records?.ds_records?.[0] || child.records?.ds_records?.[0];
+      const dsRec =
+        parent.records?.ds_records?.[0] || child.records?.ds_records?.[0];
       const dsId = `ds_${i}_${i + 1}`;
-      const dsTip = dsRec
-        ? `alg: ${dsRec.algorithm_name}\\ntag: ${dsRec.key_tag}`
-        : "No DS record";
-      const dsColor = dsRec ? "white" : "lightgray";
-
-      dotStr += `  ${dsId} [label="DS" shape=ellipse style=filled fillcolor="${dsColor}" tooltip="${dsTip}"];\n`;
 
       const arrow1 = dsRec ? "black" : "red";
       const childSigned = child.dnssec_status?.status === "signed";
