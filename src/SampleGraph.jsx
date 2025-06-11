@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import Graphviz from "graphviz-react";
 
 /**
@@ -8,9 +8,11 @@ import Graphviz from "graphviz-react";
  * @param {string} props.domain - Domain to visualize
  * @param {number} [props.refreshTrigger] - Incrementing value to trigger reload
  */
-const SampleGraph = ({ domain, refreshTrigger }) => {
+const SampleGraph = ({ domain, refreshTrigger, theme }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
+  const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, content: "" });
+  const containerRef = useRef(null);
 
   /**
    * Build a Graphviz dot string from API data.
@@ -29,7 +31,7 @@ const SampleGraph = ({ domain, refreshTrigger }) => {
 
     let dotStr =
       "digraph DNSSEC {\n" +
-      "  rankdir=LR;\n" +
+      "  rankdir=TB;\n" +
       "  node [shape=box style=filled fontname=Helvetica fontsize=16 width=2 height=1];\n" +
       "  edge [penwidth=2];\n";
 
@@ -48,11 +50,14 @@ const SampleGraph = ({ domain, refreshTrigger }) => {
       dotStr += `  subgraph cluster_${idx} {\n    label="${level.display_name}";\n    style=rounded;\n`;
 
       if (idx === 0) {
-        dotStr += `    anchor_${idx} [label="Anchor KSK" fillcolor="${fill}"];\n`;
+      dotStr += `    anchor_${idx} [label="Anchor KSK" fillcolor="${fill}" tooltip="Root trust anchor"];\n`;
       }
 
-      dotStr += `    ksk_${idx} [label="${kskLabel}" fillcolor="${fill}"];\n`;
-      dotStr += `    zsk_${idx} [label="${zskLabel}" fillcolor="${fill}"];\n`;
+      const kskTip = ksk ? `KSK\nAlgorithm: ${ksk.algorithm_name}\nTag: ${ksk.key_tag}` : "KSK";
+      const zskTip = zsk ? `ZSK\nAlgorithm: ${zsk.algorithm_name}\nTag: ${zsk.key_tag}` : "ZSK";
+
+      dotStr += `    ksk_${idx} [label="${kskLabel}" fillcolor="${fill}" tooltip="${kskTip}"];\n`;
+      dotStr += `    zsk_${idx} [label="${zskLabel}" fillcolor="${fill}" tooltip="${zskTip}"];\n`;
 
       if (idx === 0) {
         dotStr += `    anchor_${idx} -> ksk_${idx};\n`;
@@ -69,7 +74,8 @@ const SampleGraph = ({ domain, refreshTrigger }) => {
           ? `DS\\n${dsRec.algorithm_name}\\ntag ${dsRec.key_tag}`
           : "DS";
         const dsId = `ds_${idx}_${idx + 1}`;
-        dotStr += `    ${dsId} [label="${dsLabel}" shape=ellipse style=filled fillcolor="${dsColor}"];\n`;
+        const dsTip = dsRec ? `DS\nAlgorithm: ${dsRec.algorithm_name}\nTag: ${dsRec.key_tag}` : "No DS record";
+        dotStr += `    ${dsId} [label="${dsLabel}" shape=ellipse style=filled fillcolor="${dsColor}" tooltip="${dsTip}"];\n`;
       }
 
       dotStr += "  }\n";
@@ -121,6 +127,46 @@ const SampleGraph = ({ domain, refreshTrigger }) => {
     fetchData();
   }, [fetchData, refreshTrigger]);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // store tooltip text then remove <title> to disable native tooltips
+    container.querySelectorAll('title').forEach((t) => {
+      const parent = t.parentElement;
+      if (parent) {
+        parent.dataset.tooltip = t.textContent || '';
+      }
+      t.remove();
+    });
+
+    const nodes = container.querySelectorAll('g');
+    const enter = (e) => {
+      const tip = e.currentTarget.dataset.tooltip;
+      if (tip) {
+        setTooltip({ show: true, x: e.clientX, y: e.clientY, content: tip });
+      }
+    };
+    const move = (e) => {
+      setTooltip((tt) => ({ ...tt, x: e.clientX, y: e.clientY }));
+    };
+    const leave = () => setTooltip((tt) => ({ ...tt, show: false }));
+
+    nodes.forEach((n) => {
+      n.addEventListener('mouseenter', enter);
+      n.addEventListener('mousemove', move);
+      n.addEventListener('mouseleave', leave);
+    });
+
+    return () => {
+      nodes.forEach((n) => {
+        n.removeEventListener('mouseenter', enter);
+        n.removeEventListener('mousemove', move);
+        n.removeEventListener('mouseleave', leave);
+      });
+    };
+  }, [dot]);
+
   if (!domain) {
     return (
       <div className="text-center text-gray-500">Enter a domain to visualize</div>
@@ -131,9 +177,28 @@ const SampleGraph = ({ domain, refreshTrigger }) => {
     return <div className="text-center">Loading...</div>;
   }
 
+  const tooltipStyle =
+    theme === 'light'
+      ? 'bg-white text-gray-800 border border-gray-300'
+      : theme === 'high-contrast'
+      ? 'bg-black text-yellow-300 border border-yellow-300'
+      : 'bg-gray-800 text-white';
+
   return (
-    <div className="w-full overflow-x-auto flex justify-center">
-      <Graphviz dot={dot} options={{ fit: true, width: 800, height: 600 }} />
+    <div className="w-full overflow-x-auto flex justify-center relative">
+      <div ref={containerRef} className="mt-[-20px]">
+        <Graphviz dot={dot} options={{ fit: true, width: 800, height: 600 }} />
+      </div>
+      {tooltip.show && (
+        <div
+          className={`absolute pointer-events-none px-2 py-1 rounded shadow z-50 ${tooltipStyle}`}
+          style={{ left: tooltip.x + 10, top: tooltip.y + 10 }}
+        >
+          {tooltip.content.split('\n').map((line, i) => (
+            <div key={i}>{line}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
