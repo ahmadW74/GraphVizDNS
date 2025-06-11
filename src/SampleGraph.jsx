@@ -131,16 +131,6 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
     const container = containerRef.current;
     if (!container) return;
 
-    // store tooltip text then remove <title> to disable native tooltips
-    container.querySelectorAll('title').forEach((t) => {
-      const parent = t.parentElement;
-      if (parent) {
-        parent.dataset.tooltip = t.textContent || '';
-      }
-      t.remove();
-    });
-
-    const nodes = container.querySelectorAll('g');
     const enter = (e) => {
       const tip = e.currentTarget.dataset.tooltip;
       if (tip) {
@@ -152,14 +142,35 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
     };
     const leave = () => setTooltip((tt) => ({ ...tt, show: false }));
 
-    nodes.forEach((n) => {
-      n.addEventListener('mouseenter', enter);
-      n.addEventListener('mousemove', move);
-      n.addEventListener('mouseleave', leave);
-    });
+    const setup = () => {
+      container.querySelectorAll('title').forEach((t) => {
+        const parent = t.parentElement;
+        if (parent) {
+          parent.dataset.tooltip = t.textContent || '';
+        }
+        t.remove();
+      });
+
+      container.querySelectorAll('g').forEach((n) => {
+        n.removeEventListener('mouseenter', enter);
+        n.removeEventListener('mousemove', move);
+        n.removeEventListener('mouseleave', leave);
+        if (n.dataset.tooltip) {
+          n.addEventListener('mouseenter', enter);
+          n.addEventListener('mousemove', move);
+          n.addEventListener('mouseleave', leave);
+        }
+      });
+    };
+
+    const observer = new MutationObserver(setup);
+    observer.observe(container, { childList: true, subtree: true });
+
+    setup();
 
     return () => {
-      nodes.forEach((n) => {
+      observer.disconnect();
+      container.querySelectorAll('g').forEach((n) => {
         n.removeEventListener('mouseenter', enter);
         n.removeEventListener('mousemove', move);
         n.removeEventListener('mouseleave', leave);
