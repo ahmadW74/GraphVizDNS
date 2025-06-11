@@ -30,6 +30,9 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [username, setUsername] = useState("");
 
+  // Theme state
+  const [theme, setTheme] = useState("dark");
+
   // Signup state
   const [signupName, setSignupName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
@@ -146,6 +149,16 @@ const [signupMessageType, setSignupMessageType] = useState("");
     }
   };
 
+  const toggleTheme = () => {
+    if (theme === "dark") {
+      setTheme("high-contrast");
+    } else if (theme === "high-contrast") {
+      setTheme("light");
+    } else {
+      setTheme("dark");
+    }
+  };
+
   //tooltip
   const selectedDate = new Date();
   selectedDate.setDate(selectedDate.getDate() - (MAX_DAYS - timeline));
@@ -153,13 +166,13 @@ const [signupMessageType, setSignupMessageType] = useState("");
     timeline === MAX_DAYS ? "Today" : selectedDate.toLocaleDateString();
 
   return (
-    <div className="dark bg-neutral-950 text-neutral-100 min-h-screen flex flex-col text-base lg:text-lg">
+    <div className={`${theme !== "light" ? theme : ""} bg-background text-foreground min-h-screen flex flex-col text-base lg:text-lg`}>
       {/* Login dialog */}
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="sm:max-w-lg text-base space-y-6">
           <DialogHeader>
             <DialogTitle className="text-2xl">Log in</DialogTitle>
-            <DialogDescription className="text-neutral-400">
+            <DialogDescription className="text-muted-foreground">
               Enter your account credentials to continue.
             </DialogDescription>
           </DialogHeader>
@@ -187,7 +200,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
               Log in
             </Button>
             <div id="googleSignIn" className="flex justify-center"></div>
-            <p className="text-sm text-center text-neutral-400">
+            <p className="text-sm text-center text-muted-foreground">
               Don't have an account?{" "}
               <button
                 className="text-blue-400 hover:underline"
@@ -208,7 +221,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
         <DialogContent className="sm:max-w-lg text-base space-y-6">
           <DialogHeader>
             <DialogTitle className="text-2xl">Sign up</DialogTitle>
-            <DialogDescription className="text-neutral-400">
+            <DialogDescription className="text-muted-foreground">
               Create a new account to get started.
             </DialogDescription>
           </DialogHeader>
@@ -248,7 +261,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
               Sign up
             </Button>
             <div id="googleSignup" className="flex justify-center"></div>
-            <p className="text-sm text-center text-neutral-400">
+            <p className="text-sm text-center text-muted-foreground">
               Already have an account?{" "}
               <button
                 className="text-blue-400 hover:underline"
@@ -265,14 +278,19 @@ const [signupMessageType, setSignupMessageType] = useState("");
       </Dialog>
 
       {/* Header */}
-      <header className="border-b border-neutral-800">
+      <header className="border-b border-border">
         <div className="mx-auto max-w-7xl p-6 flex justify-between items-center">
           <h1 className="text-3xl font-semibold tracking-tight">
             DNS Chain Visualizer
           </h1>
           <div className="flex items-center space-x-2">
-            <User className="h-6 w-6 text-neutral-100" />
-            <p className="text-lg text-white">{username}</p>
+            <User className="h-6 w-6 text-foreground" />
+            <p className="text-lg text-foreground">{username}</p>
+            <Button size="icon" variant="secondary" onClick={toggleTheme}>
+              {theme === "dark" && <div className="text-primary">🌙</div>}
+              {theme === "high-contrast" && <div className="text-primary">⚡</div>}
+              {theme === "light" && <div className="text-primary">☀️</div>}
+            </Button>
           </div>
         </div>
       </header>
@@ -304,7 +322,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
             <div className="absolute -top-10 left-0 w-full pointer-events-none">
               <div
                 style={{ left: `${(timeline / MAX_DAYS) * 100}%` }}
-                className="absolute transform -translate-x-1/2 bg-neutral-800 text-neutral-100 text-sm lg:text-base px-3 py-2 rounded shadow"
+                className="absolute transform -translate-x-1/2 bg-popover text-popover-foreground text-sm lg:text-base px-3 py-2 rounded shadow"
               >
                 {tooltipLabel}
               </div>
@@ -320,7 +338,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
           </div>
           {/*rendering card */}
           <div className="relative">
-            <Card className="w-full bg-neutral-900 border-neutral-800">
+            <Card className="w-full bg-card border-border">
               <CardContent className="relative px-10 py-10 lg:px-14 lg:py-14">
                 <SampleGraph
                   domain={currentDomain}
