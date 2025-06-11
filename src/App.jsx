@@ -339,7 +339,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
           {/*rendering card */}
           <div className="relative">
             <Card className="w-full bg-card border-border">
-              <CardContent className="relative px-10 py-10 lg:px-14 lg:py-14 flex justify-center overflow-auto">
+              <CardContent className="relative px-4 py-4 lg:px-6 lg:py-6 flex justify-center overflow-auto">
                 <SampleGraph
                   domain={currentDomain}
                   refreshTrigger={refreshTrigger}
