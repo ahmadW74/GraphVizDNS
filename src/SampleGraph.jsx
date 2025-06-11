@@ -14,6 +14,11 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
   const [summary, setSummary] = useState(null);
   const containerRef = useRef(null);
 
+  // Spacing configuration
+  const horizontalSpacing = 1.5; // distance between nodes horizontally
+  const verticalSpacing = 1.5; // distance between ranks vertically
+  const rootOffset = 0.5; // extra left margin for the graph
+
   /**
    * Build a Graphviz dot string from API data.
    * The graph places each DNS level in a cluster box and connects
@@ -31,8 +36,11 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
 
     let dotStr =
       "digraph DNSSEC {\n" +
-      "  rankdir=TB;\n" +
-      "  node [shape=box style=filled fontname=Helvetica fontsize=16 width=2 height=1];\n" +
+      "  rankdir=LR;\n" +
+      `  nodesep=${horizontalSpacing};\n` +
+      `  ranksep=${verticalSpacing};\n` +
+      `  margin=${rootOffset};\n` +
+      "  node [shape=box style=filled fontname=Helvetica fontsize=20 width=3 height=1.5];\n" +
       "  edge [penwidth=2];\n";
 
     // Create clusters for each level
@@ -41,20 +49,20 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
       const ksk = level.records?.dnskey_records?.find((k) => k.is_ksk);
       const zsk = level.records?.dnskey_records?.find((k) => k.is_zsk);
       const kskLabel = ksk
-        ? `KSK\\n${ksk.algorithm_name}\\ntag ${ksk.key_tag}`
-        : "KSK";
+        ? `Key Signing Key\\n${ksk.algorithm_name}\\ntag ${ksk.key_tag}`
+        : "Key Signing Key";
       const zskLabel = zsk
-        ? `ZSK\\n${zsk.algorithm_name}\\ntag ${zsk.key_tag}`
-        : "ZSK";
+        ? `Zone Signing Key\\n${zsk.algorithm_name}\\ntag ${zsk.key_tag}`
+        : "Zone Signing Key";
 
       dotStr += `  subgraph cluster_${idx} {\n    label="${level.display_name}";\n    style=rounded;\n`;
 
       if (idx === 0) {
-      dotStr += `    anchor_${idx} [label="Anchor KSK" fillcolor="${fill}" tooltip="Root trust anchor"];\n`;
+      dotStr += `    anchor_${idx} [label="Trust Anchor" fillcolor="${fill}" tooltip="Root trust anchor"];\n`;
       }
 
-      const kskTip = ksk ? `KSK\nAlgorithm: ${ksk.algorithm_name}\nTag: ${ksk.key_tag}` : "KSK";
-      const zskTip = zsk ? `ZSK\nAlgorithm: ${zsk.algorithm_name}\nTag: ${zsk.key_tag}` : "ZSK";
+      const kskTip = ksk ? `Key Signing Key\nAlgorithm: ${ksk.algorithm_name}\nTag: ${ksk.key_tag}` : "Key Signing Key";
+      const zskTip = zsk ? `Zone Signing Key\nAlgorithm: ${zsk.algorithm_name}\nTag: ${zsk.key_tag}` : "Zone Signing Key";
 
       dotStr += `    ksk_${idx} [label="${kskLabel}" fillcolor="${fill}" tooltip="${kskTip}"];\n`;
       dotStr += `    zsk_${idx} [label="${zskLabel}" fillcolor="${fill}" tooltip="${zskTip}"];\n`;
@@ -71,10 +79,10 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
           level.records?.ds_records?.[0] || child.records?.ds_records?.[0];
         const dsColor = dsRec ? "white" : "lightgray";
         const dsLabel = dsRec
-          ? `DS\\n${dsRec.algorithm_name}\\ntag ${dsRec.key_tag}`
-          : "DS";
+          ? `Delegation Signer\\n${dsRec.algorithm_name}\\ntag ${dsRec.key_tag}`
+          : "Delegation Signer";
         const dsId = `ds_${idx}_${idx + 1}`;
-        const dsTip = dsRec ? `DS\nAlgorithm: ${dsRec.algorithm_name}\nTag: ${dsRec.key_tag}` : "No DS record";
+        const dsTip = dsRec ? `Delegation Signer\nAlgorithm: ${dsRec.algorithm_name}\nTag: ${dsRec.key_tag}` : "No DS record";
         dotStr += `    ${dsId} [label="${dsLabel}" shape=ellipse style=filled fillcolor="${dsColor}" tooltip="${dsTip}"];\n`;
       }
 
@@ -142,19 +150,26 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
   }
 
   return (
-    <div className="w-full overflow-auto flex flex-col items-center">
+    <div className="w-full overflow-auto flex flex-col items-start relative">
       {summary && (
-        <div className="mb-4 text-center">
-          <h2 className="font-semibold text-lg text-foreground">
-            {domain}
-          </h2>
-          <p className="text-sm text-muted-foreground">
+        <div
+          className="absolute top-0 left-0 bg-card/80 p-2 rounded text-sm"
+        >
+          <p
+            className={`font-semibold ${
+              summary.security_status?.overall_status === "secure"
+                ? "text-green-600"
+                : summary.security_status?.overall_status === "broken"
+                ? "text-red-600"
+                : "text-yellow-600"
+            }`}
+          >
             Levels: {summary.total_levels} • Signed: {summary.signed_levels}
             • Breaks: {summary.chain_breaks?.length || 0}
           </p>
         </div>
       )}
-      <div ref={containerRef}>
+      <div ref={containerRef} className="mt-8">
         <Graphviz dot={dot} />
       </div>
     </div>
