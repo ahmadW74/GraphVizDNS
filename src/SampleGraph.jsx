@@ -142,20 +142,18 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
   }
 
   return (
-    <div className="w-full overflow-auto flex flex-col items-center">
+    <div className="w-full overflow-auto flex flex-col gap-4">
       {summary && (
-        <div className="mb-4 text-center">
-          <h2 className="font-semibold text-lg text-foreground">
-            {domain}
-          </h2>
+        <div className="text-left">
+          <h2 className="font-semibold text-lg text-foreground">{domain}</h2>
           <p className="text-sm text-muted-foreground">
-            Levels: {summary.total_levels} • Signed: {summary.signed_levels}
-            • Breaks: {summary.chain_breaks?.length || 0}
+            Levels: {summary.total_levels} • Signed: {summary.signed_levels} •
+            Breaks: {summary.chain_breaks?.length || 0}
           </p>
         </div>
       )}
-      <div ref={containerRef}>
-        <Graphviz dot={dot} />
+      <div ref={containerRef} className="w-full overflow-auto flex justify-center">
+        <Graphviz dot={dot} style={{ width: "100%", minHeight: "600px" }} />
       </div>
     </div>
   );
