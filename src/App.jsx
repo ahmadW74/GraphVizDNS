@@ -339,11 +339,10 @@ const [signupMessageType, setSignupMessageType] = useState("");
           {/*rendering card */}
           <div className="relative">
             <Card className="w-full bg-card border-border">
-              <CardContent className="relative px-10 py-10 lg:px-14 lg:py-14">
+              <CardContent className="relative px-10 py-10 lg:px-14 lg:py-14 flex justify-center">
                 <SampleGraph
                   domain={currentDomain}
                   refreshTrigger={refreshTrigger}
-                  style={{ width: "300%" }}
                 />
               </CardContent>
             </Card>
