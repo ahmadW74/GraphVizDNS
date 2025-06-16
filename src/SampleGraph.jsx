@@ -21,84 +21,82 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
    * Unsigned levels are rendered in gray with red connecting arrows.
    */
   const buildDot = useCallback((data) => {
-    if (!data || !Array.isArray(data.levels)) return "digraph DNSSEC {}";
+    if (!data || !Array.isArray(data.levels)) return "digraph{}";
 
-    const statusColor = (status) => {
-      if (status === "signed") return "palegreen";
-      if (status === "partial") return "khaki";
-      return "lightgray"; // unsigned
+    const palette = {
+      root: { border: "#FB8C00", apex: "#FB8C00", apexFill: "#FFF3E0" },
+      tld: { border: "#FF9800", apex: "#FF9800", apexFill: "#FFE0B2" },
+      target: { border: "#4CAF50", apex: "#2E7D32", apexFill: "#C8E6C9" },
+      subdomain: { border: "#4CAF50", apex: "#2E7D32", apexFill: "#C8E6C9" },
     };
 
     let dotStr =
-      "digraph DNSSEC {\n" +
-      "  rankdir=TB;\n" +
-      "  node [shape=box style=filled fontname=Helvetica fontsize=16 width=2 height=1];\n" +
-      "  edge [penwidth=2];\n";
+      'digraph DNSSEC_Chain {\n' +
+      '  rankdir=LR;\n' +
+      '  fontname="Helvetica";\n' +
+      '  node [fontname="Helvetica", style=filled];\n';
 
-    // Create clusters for each level
+    // Render each zone cluster
     data.levels.forEach((level, idx) => {
-      const fill = statusColor(level.dnssec_status?.status);
+      const type = level.domain_type ||
+        (idx === 0 ? 'root' : idx === data.levels.length - 1 ? 'target' : 'tld');
+      const colors = palette[type] || palette.target;
       const ksk = level.records?.dnskey_records?.find((k) => k.is_ksk);
       const zsk = level.records?.dnskey_records?.find((k) => k.is_zsk);
-      const kskLabel = ksk
-        ? `KSK\\n${ksk.algorithm_name}\\ntag ${ksk.key_tag}`
-        : "KSK";
-      const zskLabel = zsk
-        ? `ZSK\\n${zsk.algorithm_name}\\ntag ${zsk.key_tag}`
-        : "ZSK";
+      const kskInfo = ksk
+        ? `Key ID ${ksk.key_tag} | Algo ${ksk.algorithm}`
+        : '';
+      const zskInfo = zsk
+        ? `Key ID ${zsk.key_tag} | Algo ${zsk.algorithm}`
+        : '';
 
-      dotStr += `  subgraph cluster_${idx} {\n    label="${level.display_name}";\n    style=rounded;\n`;
+      dotStr += `  subgraph cluster_${idx} {\n`;
+      dotStr += `    label="${level.display_name}";\n`;
+      dotStr += `    style="rounded,dashed";\n`;
+      dotStr += `    color="${colors.border}";\n\n`;
 
-      if (idx === 0) {
-      dotStr += `    anchor_${idx} [label="Anchor KSK" fillcolor="${fill}" tooltip="Root trust anchor"];\n`;
-      }
+      dotStr += `    apex_${idx} [label="${level.display_name}" shape=rect fillcolor="${colors.apexFill}" color="${colors.apex}"];\n`;
 
-      const kskTip = ksk ? `KSK\nAlgorithm: ${ksk.algorithm_name}\nTag: ${ksk.key_tag}` : "KSK";
-      const zskTip = zsk ? `ZSK\nAlgorithm: ${zsk.algorithm_name}\nTag: ${zsk.key_tag}` : "ZSK";
+      dotStr += `    keyset_${idx} [shape=record fillcolor="#E3F2FD" color="#2196F3" label="{ {<ksk> KSK | ${kskInfo} } | {<zsk> ZSK | ${zskInfo} } }"];\n`;
 
-      dotStr += `    ksk_${idx} [label="${kskLabel}" fillcolor="${fill}" tooltip="${kskTip}"];\n`;
-      dotStr += `    zsk_${idx} [label="${zskLabel}" fillcolor="${fill}" tooltip="${zskTip}"];\n`;
-
-      if (idx === 0) {
-        dotStr += `    anchor_${idx} -> ksk_${idx};\n`;
-      }
-
-      dotStr += `    ksk_${idx} -> zsk_${idx};\n`;
+      dotStr += `    ds_rrset_${idx} [label="DS Records" shape=ellipse fillcolor="#E1BEE7" color="#8E24AA"];\n`;
 
       if (idx < data.levels.length - 1) {
         const child = data.levels[idx + 1];
-        const dsRec =
-          level.records?.ds_records?.[0] || child.records?.ds_records?.[0];
-        const dsColor = dsRec ? "white" : "lightgray";
-        const dsLabel = dsRec
-          ? `DS\\n${dsRec.algorithm_name}\\ntag ${dsRec.key_tag}`
-          : "DS";
-        const dsId = `ds_${idx}_${idx + 1}`;
-        const dsTip = dsRec ? `DS\nAlgorithm: ${dsRec.algorithm_name}\nTag: ${dsRec.key_tag}` : "No DS record";
-        dotStr += `    ${dsId} [label="${dsLabel}" shape=ellipse style=filled fillcolor="${dsColor}" tooltip="${dsTip}"];\n`;
+        const ds = child.records?.ds_records?.[0];
+        if (ds) {
+          const digest = ds.digest ? ds.digest.slice(0, 8) + '…' : '';
+          dotStr +=
+            `    ds_for_${idx}_${idx + 1} [label=< <b>DS for ${child.display_name}</b><br/>Key ID ${ds.key_tag}<br/>Digest Type ${ds.digest_type}<br/>Digest: ${digest} >, shape=box style="rounded,filled" fillcolor="#EDE7F6" color="#673AB7"];\n`;
+        }
       }
 
-      dotStr += "  }\n";
+      dotStr +=
+        `    apex_${idx} -> keyset_${idx}:ksk [label="has DNSKEYs" color="#1976D2"];\n`;
+      dotStr +=
+        `    apex_${idx} -> ds_rrset_${idx} [label="has" color="#8E24AA"];\n`;
+      if (idx < data.levels.length - 1) {
+        const child = data.levels[idx + 1];
+        const ds = child.records?.ds_records?.[0];
+        if (ds) {
+          dotStr +=
+            `    ds_rrset_${idx} -> ds_for_${idx}_${idx + 1} [color="#8E24AA"];\n`;
+          dotStr +=
+            `    ds_for_${idx}_${idx + 1} -> keyset_${idx + 1}:ksk [label="validates" color="#4CAF50" penwidth=2];\n`;
+        }
+      }
+      dotStr +=
+        `    keyset_${idx}:ksk -> keyset_${idx}:zsk [style=dotted arrowhead=none color="#424242"];\n`;
+
+      dotStr += '  }\n';
     });
 
-    // Connect levels using DS records
+    // Delegation edges between zones
     for (let i = 0; i < data.levels.length - 1; i++) {
-      const parent = data.levels[i];
-      const child = data.levels[i + 1];
-
-      const dsRec =
-        parent.records?.ds_records?.[0] || child.records?.ds_records?.[0];
-      const dsId = `ds_${i}_${i + 1}`;
-
-      const arrow1 = dsRec ? "black" : "red";
-      const childSigned = child.dnssec_status?.status === "signed";
-      const arrow2 = dsRec && childSigned ? "black" : "red";
-
-      dotStr += `  zsk_${i} -> ${dsId} [color=${arrow1}];\n`;
-      dotStr += `  ${dsId} -> ksk_${i + 1} [color=${arrow2}];\n`;
+      dotStr += `  apex_${i} -> apex_${i + 1} [label="delegates to" color="#FF9800" style=dashed];\n`;
     }
 
-    dotStr += "}";
+    dotStr += '}';
     return dotStr;
   }, []);
 
