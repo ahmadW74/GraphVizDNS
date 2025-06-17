@@ -7,8 +7,9 @@ import Graphviz from "graphviz-react";
  * @param {object} props
  * @param {string} props.domain - Domain to visualize
  * @param {number} [props.refreshTrigger] - Incrementing value to trigger reload
- */
-const SampleGraph = ({ domain, refreshTrigger, theme }) => {
+ * @param {number} [props.scale=1] - Scale factor for the rendered graph
+*/
+const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
@@ -28,6 +29,7 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
       tld: { border: "#FF9800", apex: "#FF9800", apexFill: "#FFE0B2" },
       target: { border: "#4CAF50", apex: "#2E7D32", apexFill: "#C8E6C9" },
       subdomain: { border: "#4CAF50", apex: "#2E7D32", apexFill: "#C8E6C9" },
+      unsigned: { border: "#9E9E9E", apex: "#9E9E9E", apexFill: "#F5F5F5" },
     };
 
     let dotStr =
@@ -40,7 +42,13 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
     data.levels.forEach((level, idx) => {
       const type = level.domain_type ||
         (idx === 0 ? 'root' : idx === data.levels.length - 1 ? 'target' : 'tld');
-      const colors = palette[type] || palette.target;
+      let colors = palette[type] || palette.target;
+      if (level.dnssec_status?.status !== 'signed') {
+        colors = palette.unsigned;
+      }
+      if (level.chain_break_info?.has_chain_break) {
+        colors = { border: '#D32F2F', apex: '#D32F2F', apexFill: '#FFCDD2' };
+      }
       const ksk = level.records?.dnskey_records?.find((k) => k.is_ksk);
       const zsk = level.records?.dnskey_records?.find((k) => k.is_zsk);
       const kskInfo = ksk
@@ -72,10 +80,18 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
       if (idx < data.levels.length - 1) {
         const child = data.levels[idx + 1];
         const ds = child.records?.ds_records?.[0];
+        const childBreak = child.chain_break_info?.has_chain_break;
+        const breakReason = child.chain_break_info?.break_reason || "";
+
         if (ds) {
           const digest = ds.digest ? ds.digest.slice(0, 8) + '…' : '';
+          const fill = childBreak && breakReason.toLowerCase().includes('dnskey') ? '#FFCDD2' : '#EDE7F6';
+          const col = childBreak && breakReason.toLowerCase().includes('dnskey') ? '#D32F2F' : '#673AB7';
           dotStr +=
-            `    ds_for_${idx}_${idx + 1} [label=< <b>DS for ${child.display_name}</b><br/>Key ID ${ds.key_tag}<br/>Digest Type ${ds.digest_type}<br/>Digest: ${digest} >, shape=box style="rounded,filled" fillcolor="#EDE7F6" color="#673AB7"];\n`;
+            `    ds_for_${idx}_${idx + 1} [label=< <b>DS for ${child.display_name}</b><br/>Key ID ${ds.key_tag}<br/>Digest Type ${ds.digest_type}<br/>Digest: ${digest} >, shape=box style="rounded,filled" fillcolor="${fill}" color="${col}"];\n`;
+        } else {
+          dotStr +=
+            `    ds_for_${idx}_${idx + 1} [label=< <b>No DS for ${child.display_name}</b> >, shape=box style="rounded,filled" fillcolor="#FFEBEE" color="#C62828"];\n`;
         }
       }
 
@@ -90,11 +106,20 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
       if (idx < data.levels.length - 1) {
         const child = data.levels[idx + 1];
         const ds = child.records?.ds_records?.[0];
+        const childBreak = child.chain_break_info?.has_chain_break;
+        const breakReason = child.chain_break_info?.break_reason || "";
+
         if (ds) {
           dotStr +=
             `    ds_rrset_${idx} -> ds_for_${idx}_${idx + 1} [color="#8E24AA"];\n`;
+          const edgeStyle = childBreak && breakReason.toLowerCase().includes('dnskey')
+            ? 'color="#D32F2F" style=dashed'
+            : 'color="#4CAF50" penwidth=2';
           dotStr +=
-            `    ds_for_${idx}_${idx + 1} -> keyset_${idx + 1}:ksk [label="validates" color="#4CAF50" penwidth=2];\n`;
+            `    ds_for_${idx}_${idx + 1} -> keyset_${idx + 1}:ksk [label="validates" ${edgeStyle}];\n`;
+        } else {
+          dotStr +=
+            `    ds_rrset_${idx} -> ds_for_${idx}_${idx + 1} [style=dashed color="#C62828"];\n`;
         }
       }
       dotStr +=
@@ -166,7 +191,12 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
         <Graphviz
           dot={dot}
           options={{ engine: "dot" }}
-          style={{ width: "100%", minHeight: "600px" }}
+          style={{
+            width: "100%",
+            minHeight: `${600 * scale}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
         />
       </div>
     </div>
