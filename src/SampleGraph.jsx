@@ -51,13 +51,21 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
         : '';
 
       dotStr += `  subgraph cluster_${idx} {\n`;
-      dotStr += `    label="${level.display_name}";\n`;
+      const zoneLabel = idx === 0
+        ? `Root Zone (${level.display_name})`
+        : idx === data.levels.length - 1
+          ? level.display_name
+          : `${level.display_name} Zone`;
+      dotStr += `    label="${zoneLabel}";\n`;
       dotStr += `    style="rounded,dashed";\n`;
       dotStr += `    color="${colors.border}";\n\n`;
 
       dotStr += `    apex_${idx} [label="${level.display_name}" shape=rect fillcolor="${colors.apexFill}" color="${colors.apex}"];\n`;
 
       dotStr += `    keyset_${idx} [shape=record fillcolor="#E3F2FD" color="#2196F3" label="{ {<ksk> KSK | ${kskInfo} } | {<zsk> ZSK | ${zskInfo} } }"];\n`;
+      if (idx !== 0) {
+        dotStr += `    dnskey_rrset_${idx} [label="DNSKEY Records" shape=ellipse fillcolor="#BBDEFB" color="#1976D2"];\n`;
+      }
 
       dotStr += `    ds_rrset_${idx} [label="DS Records" shape=ellipse fillcolor="#E1BEE7" color="#8E24AA"];\n`;
 
@@ -71,10 +79,14 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
         }
       }
 
-      dotStr +=
-        `    apex_${idx} -> keyset_${idx}:ksk [label="has DNSKEYs" color="#1976D2"];\n`;
-      dotStr +=
-        `    apex_${idx} -> ds_rrset_${idx} [label="has" color="#8E24AA"];\n`;
+      if (idx === 0) {
+        dotStr += `    apex_${idx} -> keyset_${idx}:ksk [label="has DNSKEYs" color="#1976D2"];\n`;
+      } else {
+        dotStr += `    apex_${idx} -> dnskey_rrset_${idx} [label="has" color="#1976D2"];\n`;
+        dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:ksk [color="#1976D2"];\n`;
+        dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:zsk [color="#1976D2"];\n`;
+      }
+      dotStr += `    apex_${idx} -> ds_rrset_${idx} [label="has" color="#8E24AA"];\n`;
       if (idx < data.levels.length - 1) {
         const child = data.levels[idx + 1];
         const ds = child.records?.ds_records?.[0];
@@ -151,7 +163,11 @@ const SampleGraph = ({ domain, refreshTrigger, theme }) => {
         </div>
       )}
       <div ref={containerRef} className="w-full overflow-auto flex justify-center">
-        <Graphviz dot={dot} style={{ width: "100%", minHeight: "600px" }} />
+        <Graphviz
+          dot={dot}
+          options={{ engine: "dot" }}
+          style={{ width: "100%", minHeight: "600px" }}
+        />
       </div>
     </div>
   );
