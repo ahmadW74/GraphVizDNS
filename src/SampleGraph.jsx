@@ -83,6 +83,7 @@ const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
       dotStr += `    keyset_${idx} [shape=record fillcolor="#E3F2FD" color="#2196F3" label="{ {<ksk> KSK | ${kskInfo} } | {<zsk> ZSK | ${zskInfo} } }"];\n`;
       if (idx !== 0) {
         dotStr += `    dnskey_rrset_${idx} [label="DNSKEY Records" shape=ellipse fillcolor="#BBDEFB" color="#1976D2"];\n`;
+        dotStr += `    {rank=same; dnskey_rrset_${idx}; keyset_${idx};}\n`;
       }
 
       dotStr += `    ds_rrset_${idx} [label="DS Records" shape=ellipse fillcolor="#E1BEE7" color="#8E24AA"];\n`;
