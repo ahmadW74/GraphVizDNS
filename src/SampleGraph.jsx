@@ -49,14 +49,8 @@ const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
       if (level.chain_break_info?.has_chain_break) {
         colors = { border: '#D32F2F', apex: '#D32F2F', apexFill: '#FFCDD2' };
       }
-      // Grab the first KSK/ZSK from the records. If none are flagged
-      // fall back to the key_hierarchy lists which are always populated
-      const ksk =
-        level.records?.dnskey_records?.find((k) => k.is_ksk) ||
-        level.key_hierarchy?.ksk_keys?.[0];
-      const zsk =
-        level.records?.dnskey_records?.find((k) => k.is_zsk) ||
-        level.key_hierarchy?.zsk_keys?.[0];
+      const ksk = level.records?.dnskey_records?.find((k) => k.is_ksk);
+      const zsk = level.records?.dnskey_records?.find((k) => k.is_zsk);
       const kskInfo = ksk
         ? `Key ID ${ksk.key_tag} | Algo ${ksk.algorithm}`
         : '';
@@ -77,7 +71,9 @@ const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
       dotStr += `    apex_${idx} [label="${level.display_name}" shape=rect fillcolor="${colors.apexFill}" color="${colors.apex}"];\n`;
 
       dotStr += `    keyset_${idx} [shape=record fillcolor="#E3F2FD" color="#2196F3" label="{ {<ksk> KSK | ${kskInfo} } | {<zsk> ZSK | ${zskInfo} } }"];\n`;
-      dotStr += `    dnskey_rrset_${idx} [label="DNSKEY Records" shape=ellipse fillcolor="#BBDEFB" color="#1976D2"];\n`;
+      if (idx !== 0) {
+        dotStr += `    dnskey_rrset_${idx} [label="DNSKEY Records" shape=ellipse fillcolor="#BBDEFB" color="#1976D2"];\n`;
+      }
 
       dotStr += `    ds_rrset_${idx} [label="DS Records" shape=ellipse fillcolor="#E1BEE7" color="#8E24AA"];\n`;
 
@@ -99,9 +95,13 @@ const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
         }
       }
 
-      dotStr += `    apex_${idx} -> dnskey_rrset_${idx} [label="has" color="#1976D2"];\n`;
-      dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:ksk [color="#1976D2"];\n`;
-      dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:zsk [color="#1976D2"];\n`;
+      if (idx === 0) {
+        dotStr += `    apex_${idx} -> keyset_${idx}:ksk [label="has DNSKEYs" color="#1976D2"];\n`;
+      } else {
+        dotStr += `    apex_${idx} -> dnskey_rrset_${idx} [label="has" color="#1976D2"];\n`;
+        dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:ksk [color="#1976D2"];\n`;
+        dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:zsk [color="#1976D2"];\n`;
+      }
       dotStr += `    apex_${idx} -> ds_rrset_${idx} [label="has" color="#8E24AA"];\n`;
       if (idx < data.levels.length - 1) {
         const child = data.levels[idx + 1];
@@ -112,9 +112,6 @@ const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
         if (ds) {
           dotStr +=
             `    ds_rrset_${idx} -> ds_for_${idx}_${idx + 1} [color="#8E24AA"];\n`;
-          // Zone ZSK signs the DS record for the child zone
-          dotStr +=
-            `    keyset_${idx}:zsk -> ds_for_${idx}_${idx + 1} [label="signs" color="#1976D2"];\n`;
           const edgeStyle = childBreak && breakReason.toLowerCase().includes('dnskey')
             ? 'color="#D32F2F" style=dashed'
             : 'color="#4CAF50" penwidth=2';
