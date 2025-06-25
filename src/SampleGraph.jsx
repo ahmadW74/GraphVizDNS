@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Graphviz from "graphviz-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RotateCcw } from "lucide-react";
 
 /**
  * Renders a DNSSEC chain as a Graphviz diagram.
@@ -7,13 +10,12 @@ import Graphviz from "graphviz-react";
  * @param {object} props
  * @param {string} props.domain - Domain to visualize
  * @param {number} [props.refreshTrigger] - Incrementing value to trigger reload
- * @param {number} [props.scale=1] - Scale factor for the rendered graph
+ * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
 */
-const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
+const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
-  const containerRef = useRef(null);
 
   /**
    * Build a Graphviz dot string from API data.
@@ -190,28 +192,38 @@ const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
   }
 
   return (
-    <div className="w-full overflow-auto flex flex-col gap-4">
-      {summary && (
-        <div className="text-left">
-          <h2 className="font-semibold text-lg text-foreground">{domain}</h2>
-          <p className="text-sm text-muted-foreground">
-            Levels: {summary.total_levels} • Signed: {summary.signed_levels} •
-            Breaks: {summary.chain_breaks?.length || 0}
-          </p>
-        </div>
-      )}
-      <div ref={containerRef} className="w-full overflow-auto flex justify-center">
-        <Graphviz
-          dot={dot}
-          options={{ engine: "dot" }}
-          style={{
-            width: "100%",
-            minHeight: `${600 * scale}px`,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-          }}
-        />
-      </div>
+    <div className="relative">
+      <Card className="w-full bg-card border-border">
+        <CardContent className="relative px-6 py-6 lg:px-8 lg:py-8 flex justify-center overflow-auto">
+          <div className="w-full overflow-auto flex flex-col gap-4">
+            {summary && (
+              <div className="text-left">
+                <h2 className="font-semibold text-lg text-foreground">{domain}</h2>
+                <p className="text-sm text-muted-foreground">
+                  Levels: {summary.total_levels} • Signed: {summary.signed_levels} •
+                  Breaks: {summary.chain_breaks?.length || 0}
+                </p>
+              </div>
+            )}
+            <div className="w-full overflow-auto flex justify-center">
+              <Graphviz
+                dot={dot}
+                options={{ engine: "dot" }}
+                style={{ width: "100%" }}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Button
+        size="icon"
+        variant="secondary"
+        onClick={onRefresh}
+        disabled={!domain}
+        className="absolute -right-16 top-4 h-12 w-12"
+      >
+        <RotateCcw className="h-6 w-6" />
+      </Button>
     </div>
   );
 };

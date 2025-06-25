@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { RotateCcw, Search, User } from "lucide-react";
+import { Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
@@ -21,7 +20,6 @@ export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const MAX_DAYS = 1825;
   const [timeline, setTimeline] = useState(MAX_DAYS);
-  const [graphScale, setGraphScale] = useState(1);
   const [loginOpen, setLoginOpen] = useState(true);
   const [signupOpen, setSignupOpen] = useState(false);
 
@@ -337,40 +335,12 @@ const [signupMessageType, setSignupMessageType] = useState("");
               className="h-full"
             />
           </div>
-          <div className="mb-6">
-            <div className="text-sm text-popover-foreground mb-1">Graph Size</div>
-            <Slider
-              min={0.5}
-              max={2}
-              step={0.1}
-              value={[graphScale]}
-              onValueChange={(v) => setGraphScale(v[0])}
-            />
-          </div>
-          {/*rendering card */}
-          <div className="relative">
-            <Card className="w-full bg-card border-border">
-              <CardContent className="relative px-6 py-6 lg:px-8 lg:py-8 flex justify-center overflow-auto">
-                <SampleGraph
-                  domain={currentDomain}
-                  refreshTrigger={refreshTrigger}
-                  theme={theme}
-                  scale={graphScale}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Reload button*/}
-            <Button
-              size="icon"
-              variant="secondary"
-              onClick={handleRefresh}
-              disabled={!currentDomain}
-              className="absolute -right-16 top-4 h-12 w-12"
-            >
-              <RotateCcw className="h-6 w-6" />
-            </Button>
-          </div>
+          <SampleGraph
+            domain={currentDomain}
+            refreshTrigger={refreshTrigger}
+            theme={theme}
+            onRefresh={handleRefresh}
+          />
         </div>
       </main>
     </div>
