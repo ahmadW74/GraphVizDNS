@@ -21,7 +21,8 @@ export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const MAX_DAYS = 1825;
   const [timeline, setTimeline] = useState(MAX_DAYS);
-  const [graphScale, setGraphScale] = useState(1);
+  // Set the scale for the graph rendering. Adjust this value as needed.
+  const GRAPH_SCALE = 1;
   const [loginOpen, setLoginOpen] = useState(true);
   const [signupOpen, setSignupOpen] = useState(false);
 
@@ -337,20 +338,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
               className="h-full"
             />
           </div>
-          {/* Scale Slider */}
-          <div className="flex items-center gap-4 mb-6">
-            <span className="text-sm">Scale</span>
-            <Slider
-              min={0.5}
-              max={2}
-              step={0.1}
-              value={[graphScale]}
-              onValueChange={(v) => setGraphScale(v[0])}
-              className="flex-1"
-            />
-            <span className="text-sm w-10 text-right">{graphScale.toFixed(1)}x</span>
-          </div>
-          {/*rendering card */}
+          {/* rendering card */}
           <div className="relative">
             <Card className="w-full bg-card border-border">
               <CardContent className="relative px-6 py-6 lg:px-8 lg:py-8 flex justify-center overflow-auto">
@@ -358,7 +346,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
                   domain={currentDomain}
                   refreshTrigger={refreshTrigger}
                   theme={theme}
-                  scale={graphScale}
+                  scale={GRAPH_SCALE}
                 />
               </CardContent>
             </Card>
