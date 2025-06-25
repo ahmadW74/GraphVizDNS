@@ -49,13 +49,23 @@ const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
       if (level.chain_break_info?.has_chain_break) {
         colors = { border: '#D32F2F', apex: '#D32F2F', apexFill: '#FFCDD2' };
       }
-      const ksk = level.records?.dnskey_records?.find((k) => k.is_ksk);
-      const zsk = level.records?.dnskey_records?.find((k) => k.is_zsk);
+      const ksk =
+        level.records?.dnskey_records?.find((k) => k.is_ksk) ||
+        level.key_hierarchy?.ksk_keys?.[0] ||
+        (Array.isArray(level.records?.dnskey_records)
+          ? level.records.dnskey_records.find((k) => k.role === 'KSK')
+          : null);
+      const zsk =
+        level.records?.dnskey_records?.find((k) => k.is_zsk) ||
+        level.key_hierarchy?.zsk_keys?.[0] ||
+        (Array.isArray(level.records?.dnskey_records)
+          ? level.records.dnskey_records.find((k) => k.role === 'ZSK')
+          : null);
       const kskInfo = ksk
-        ? `Key ID ${ksk.key_tag} | Algo ${ksk.algorithm}`
+        ? `Key ID ${ksk.key_tag} | Algo ${ksk.algorithm_name || ksk.algorithm}`
         : '';
       const zskInfo = zsk
-        ? `Key ID ${zsk.key_tag} | Algo ${zsk.algorithm}`
+        ? `Key ID ${zsk.key_tag} | Algo ${zsk.algorithm_name || zsk.algorithm}`
         : '';
 
       dotStr += `  subgraph cluster_${idx} {\n`;
@@ -112,6 +122,8 @@ const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
         if (ds) {
           dotStr +=
             `    ds_rrset_${idx} -> ds_for_${idx}_${idx + 1} [color="#8E24AA"];\n`;
+          dotStr +=
+            `    keyset_${idx}:zsk -> ds_for_${idx}_${idx + 1} [label="signs" color="#4CAF50"];\n`;
           const edgeStyle = childBreak && breakReason.toLowerCase().includes('dnskey')
             ? 'color="#D32F2F" style=dashed'
             : 'color="#4CAF50" penwidth=2';

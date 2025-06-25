@@ -21,6 +21,7 @@ export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const MAX_DAYS = 1825;
   const [timeline, setTimeline] = useState(MAX_DAYS);
+  const [graphScale, setGraphScale] = useState(1);
   const [loginOpen, setLoginOpen] = useState(true);
   const [signupOpen, setSignupOpen] = useState(false);
 
@@ -336,6 +337,16 @@ const [signupMessageType, setSignupMessageType] = useState("");
               className="h-full"
             />
           </div>
+          <div className="mb-6">
+            <div className="text-sm text-popover-foreground mb-1">Graph Size</div>
+            <Slider
+              min={0.5}
+              max={2}
+              step={0.1}
+              value={[graphScale]}
+              onValueChange={(v) => setGraphScale(v[0])}
+            />
+          </div>
           {/*rendering card */}
           <div className="relative">
             <Card className="w-full bg-card border-border">
@@ -344,6 +355,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
                   domain={currentDomain}
                   refreshTrigger={refreshTrigger}
                   theme={theme}
+                  scale={graphScale}
                 />
               </CardContent>
             </Card>
