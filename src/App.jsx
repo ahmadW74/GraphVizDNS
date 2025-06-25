@@ -21,6 +21,7 @@ export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const MAX_DAYS = 1825;
   const [timeline, setTimeline] = useState(MAX_DAYS);
+  const [graphScale, setGraphScale] = useState(1);
   const [loginOpen, setLoginOpen] = useState(true);
   const [signupOpen, setSignupOpen] = useState(false);
 
@@ -327,7 +328,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
                 {tooltipLabel}
               </div>
             </div>
-            <Slider
+          <Slider
               min={0}
               max={MAX_DAYS}
               step={1}
@@ -335,6 +336,19 @@ const [signupMessageType, setSignupMessageType] = useState("");
               onValueChange={(v) => setTimeline(v[0])}
               className="h-full"
             />
+          </div>
+          {/* Scale Slider */}
+          <div className="flex items-center gap-4 mb-6">
+            <span className="text-sm">Scale</span>
+            <Slider
+              min={0.5}
+              max={2}
+              step={0.1}
+              value={[graphScale]}
+              onValueChange={(v) => setGraphScale(v[0])}
+              className="flex-1"
+            />
+            <span className="text-sm w-10 text-right">{graphScale.toFixed(1)}x</span>
           </div>
           {/*rendering card */}
           <div className="relative">
@@ -344,6 +358,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
                   domain={currentDomain}
                   refreshTrigger={refreshTrigger}
                   theme={theme}
+                  scale={graphScale}
                 />
               </CardContent>
             </Card>

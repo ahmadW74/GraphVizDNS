@@ -130,7 +130,13 @@ const SampleGraph = ({ domain, refreshTrigger, theme, scale = 1 }) => {
 
     // Delegation edges between zones
     for (let i = 0; i < data.levels.length - 1; i++) {
-      dotStr += `  apex_${i} -> apex_${i + 1} [label="delegates to" color="#FF9800" style=dashed];\n`;
+      const child = data.levels[i + 1];
+      const broken = child.chain_break_info?.has_chain_break;
+      const color = broken ? "#D32F2F" : "#FF9800";
+      const label = broken ? "delegation (broken)" : "delegates to";
+      const style = broken ? "bold" : "dashed";
+      const pen = broken ? " penwidth=2" : "";
+      dotStr += `  apex_${i} -> apex_${i + 1} [label="${label}" color="${color}" style=${style}${pen}];\n`;
     }
 
     dotStr += '}';
