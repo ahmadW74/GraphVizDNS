@@ -14,6 +14,7 @@ import {
 import Graphviz from "graphviz-react";
 import DNSSECVisualizer from "./DnsGraph2.jsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { API_BASE } from "@/lib/api";
 export default function App() {
   // UI state
   const [domain, setDomain] = useState("chatgpt.com");
@@ -44,7 +45,7 @@ export default function App() {
     setLoginError("");
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/login/${loginEmail}/${loginPassword}`
+        `${API_BASE}/login/${loginEmail}/${loginPassword}`
       );
       if (!res.ok) {
         setLoginError("Unable to verify credentials.");
@@ -69,7 +70,7 @@ export default function App() {
     setSignupMessage("");
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/signup/${signupEmail}/${signupPassword}/${signupName}`
+        `${API_BASE}/signup/${signupEmail}/${signupPassword}/${signupName}`
       );
       if (res.ok) {
         setSignupMessageType("success");

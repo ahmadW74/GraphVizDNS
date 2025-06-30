@@ -697,12 +697,13 @@ def google_auth(payload: TokenPayload):
         )
         email = idinfo.get("email")
         name = idinfo.get("name", email)
+        picture = idinfo.get("picture")
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid token")
 
     for entry in data:
         if len(entry) > 1 and entry[1] == email:
-            return {"success": entry[0], "email": email}
+            return {"success": entry[0], "email": email, "picture": picture}
 
     file_entry = f"{name}:{email}:"
     array_entry = [name, email, ""]
@@ -710,6 +711,6 @@ def google_auth(payload: TokenPayload):
     with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "a") as file:
         file.write(f"\n{file_entry}")
 
-    return {"success": name, "email": email}
+    return {"success": name, "email": email, "picture": picture}
     
 #uvicorn main:app --reload

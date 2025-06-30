@@ -13,6 +13,7 @@ import {
 import SampleGraph from "./SampleGraph.jsx";
 import DNSSECVisualizer from "./DNSGraph.jsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { API_BASE } from "@/lib/api";
 export default function App() {
   // UI state
   const [domain, setDomain] = useState("");
@@ -28,6 +29,7 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [username, setUsername] = useState("");
+  const [profilePic, setProfilePic] = useState(null);
 
   // Theme state
   const [theme, setTheme] = useState("dark");
@@ -71,7 +73,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
 
   const handleGoogleCredential = async (credential) => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/google-auth", {
+      const res = await fetch(`${API_BASE}/google-auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: credential }),
@@ -79,6 +81,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
       if (res.ok) {
         const data = await res.json();
         setUsername(data.success);
+        setProfilePic(data.picture || null);
         setLoginOpen(false);
         setSignupOpen(false);
       }
@@ -91,7 +94,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
     setLoginError("");
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/login/${loginEmail}/${loginPassword}`
+        `${API_BASE}/login/${loginEmail}/${loginPassword}`
       );
       if (!res.ok) {
         setLoginError("Unable to verify credentials.");
@@ -101,6 +104,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
       const successVal = data.success.trim();
       if (successVal !== "no") {
         setUsername(successVal);
+        setProfilePic(null);
         setLoginError("");
         setLoginOpen(false);
       } else {
@@ -115,7 +119,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
     setSignupMessage("");
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/signup/${signupEmail}/${signupPassword}/${signupName}`
+        `${API_BASE}/signup/${signupEmail}/${signupPassword}/${signupName}`
       );
       if (res.ok) {
         setSignupMessageType("success");
@@ -283,7 +287,15 @@ const [signupMessageType, setSignupMessageType] = useState("");
             DNS Chain Visualizer
           </h1>
           <div className="flex items-center space-x-2">
-            <User className="h-6 w-6 text-foreground" />
+            {profilePic ? (
+              <img
+                src={profilePic}
+                alt={username}
+                className="h-8 w-8 rounded-full"
+              />
+            ) : (
+              <User className="h-6 w-6 text-foreground" />
+            )}
             <p className="text-lg text-foreground">{username}</p>
             <Button size="icon" variant="secondary" onClick={toggleTheme}>
               {theme === "dark" && <div className="text-primary">🌙</div>}
