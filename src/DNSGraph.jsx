@@ -18,6 +18,7 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
+import { API_BASE } from "@/lib/api";
 
 // Sample data for fallback/demo purposes
 const sampleData = {
@@ -130,9 +131,8 @@ function DNSSECVisualizer({ domain, onRefresh, refreshTrigger }) {
       setLoading(true);
       setError(null);
 
-      // Replace with your actual API endpoint
       const response = await fetch(
-        `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`
+        `${API_BASE}/chain/${encodeURIComponent(domain)}`
       );
 
       if (!response.ok) {

@@ -3,6 +3,7 @@ import Graphviz from "graphviz-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
+import { API_BASE } from "@/lib/api";
 
 /**
  * Renders a DNSSEC chain as a Graphviz diagram.
@@ -162,7 +163,7 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
     try {
       setLoading(true);
       const res = await fetch(
-        `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`
+        `${API_BASE}/chain/${encodeURIComponent(domain)}`
       );
       const json = await res.json();
       setDot(buildDot(json));
