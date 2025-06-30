@@ -27,7 +27,7 @@ data=[]
 with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "r") as file:
     data =[line.strip().split(":") for line in file.readlines()]
     print(data)
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_ID = "376144524625-gic1ubegimaldkggs0g4fg112i62lahd.apps.googleusercontent.com"
 
 class DNSSECAnalyzer:
     def __init__(self):
