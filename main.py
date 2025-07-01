@@ -1,6 +1,5 @@
 
-from fastapi import FastAPI, HTTPException, Response, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.oauth2 import id_token
@@ -29,7 +28,6 @@ with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "r") as file:
     data =[line.strip().split(":") for line in file.readlines()]
     print(data)
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
-SESSION_COOKIE_NAME = "session_user"
 
 class DNSSECAnalyzer:
     def __init__(self):
@@ -688,7 +686,7 @@ class TokenPayload(BaseModel):
     token: str
 
 @app.post("/google-auth")
-def google_auth(payload: TokenPayload, response: Response):
+def google_auth(payload: TokenPayload):
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Google client ID not configured")
     try:
@@ -705,10 +703,7 @@ def google_auth(payload: TokenPayload, response: Response):
 
     for entry in data:
         if len(entry) > 1 and entry[1] == email:
-            res = {"success": entry[0], "email": email, "picture": picture}
-            cookie_resp = JSONResponse(res)
-            cookie_resp.set_cookie(SESSION_COOKIE_NAME, entry[0], max_age=86400, httponly=True)
-            return cookie_resp
+            return {"success": entry[0], "email": email, "picture": picture}
 
     file_entry = f"{name}:{email}:"
     array_entry = [name, email, ""]
@@ -716,39 +711,6 @@ def google_auth(payload: TokenPayload, response: Response):
     with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "a") as file:
         file.write(f"\n{file_entry}")
 
-    res = {"success": name, "email": email, "picture": picture}
-    cookie_resp = JSONResponse(res)
-    cookie_resp.set_cookie(SESSION_COOKIE_NAME, name, max_age=86400, httponly=True)
-    return cookie_resp
-
-# additional endpoints for session management
-
-@app.post("/login")
-async def login_post(payload: dict, response: Response):
-    email = payload.get("email", "")
-    password = payload.get("password", "")
-    remember = bool(payload.get("remember", False))
-    for entry in data:
-        if len(entry) > 2 and entry[1] == email and entry[2] == password:
-            username = entry[0]
-            res = {"success": username}
-            cookie_resp = JSONResponse(res)
-            max_age = 86400 if remember else None
-            cookie_resp.set_cookie(SESSION_COOKIE_NAME, username, max_age=max_age, httponly=True)
-            return cookie_resp
-    return JSONResponse({"success": "no"}, status_code=400)
-
-
-@app.get("/session")
-async def check_session(request: Request):
-    user = request.cookies.get(SESSION_COOKIE_NAME)
-    if user:
-        return {"loggedIn": True, "username": user}
-    return {"loggedIn": False}
-
-
-@app.post("/logout")
-async def logout(response: Response):
-    resp = JSONResponse({"success": True})
-    resp.delete_cookie(SESSION_COOKIE_NAME)
-    return resp
+    return {"success": name, "email": email, "picture": picture}
+    
+#uvicorn main:app --reload
