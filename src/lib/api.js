@@ -1,1 +1,1 @@
-export const API_BASE = "http://ai.eunomatix.com:804";
+export const API_BASE = "http://127.0.0.1:8000";

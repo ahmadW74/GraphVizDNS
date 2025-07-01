@@ -12,12 +12,12 @@ import { API_BASE } from "@/lib/api";
  * @param {string} props.domain - Domain to visualize
  * @param {number} [props.refreshTrigger] - Incrementing value to trigger reload
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
-*/
+ */
 const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
-
+  const GRAPH_SCALE = 2;
   /**
    * Build a Graphviz dot string from API data.
    * The graph places each DNS level in a cluster box and connects
@@ -36,45 +36,51 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
     };
 
     let dotStr =
-      'digraph DNSSEC_Chain {\n' +
-      '  rankdir=LR;\n' +
+      "digraph DNSSEC_Chain {\n" +
+      "  rankdir=LR;\n" +
       '  fontname="Helvetica";\n' +
       '  node [fontname="Helvetica", style=filled];\n';
 
     // Render each zone cluster
     data.levels.forEach((level, idx) => {
-      const type = level.domain_type ||
-        (idx === 0 ? 'root' : idx === data.levels.length - 1 ? 'target' : 'tld');
+      const type =
+        level.domain_type ||
+        (idx === 0
+          ? "root"
+          : idx === data.levels.length - 1
+          ? "target"
+          : "tld");
       let colors = palette[type] || palette.target;
-      if (level.dnssec_status?.status !== 'signed') {
+      if (level.dnssec_status?.status !== "signed") {
         colors = palette.unsigned;
       }
       if (level.chain_break_info?.has_chain_break) {
-        colors = { border: '#D32F2F', apex: '#D32F2F', apexFill: '#FFCDD2' };
+        colors = { border: "#D32F2F", apex: "#D32F2F", apexFill: "#FFCDD2" };
       }
       const ksk =
         level.records?.dnskey_records?.find((k) => k.is_ksk) ||
         level.key_hierarchy?.ksk_keys?.[0] ||
         (Array.isArray(level.records?.dnskey_records)
-          ? level.records.dnskey_records.find((k) => k.role === 'KSK')
+          ? level.records.dnskey_records.find((k) => k.role === "KSK")
           : null);
       const zsk =
         level.records?.dnskey_records?.find((k) => k.is_zsk) ||
         level.key_hierarchy?.zsk_keys?.[0] ||
         (Array.isArray(level.records?.dnskey_records)
-          ? level.records.dnskey_records.find((k) => k.role === 'ZSK')
+          ? level.records.dnskey_records.find((k) => k.role === "ZSK")
           : null);
       const kskInfo = ksk
         ? `Key ID ${ksk.key_tag} | Algo ${ksk.algorithm_name || ksk.algorithm}`
-        : '';
+        : "";
       const zskInfo = zsk
         ? `Key ID ${zsk.key_tag} | Algo ${zsk.algorithm_name || zsk.algorithm}`
-        : '';
+        : "";
 
       dotStr += `  subgraph cluster_${idx} {\n`;
-      const zoneLabel = idx === 0
-        ? `Root Zone (${level.display_name})`
-        : idx === data.levels.length - 1
+      const zoneLabel =
+        idx === 0
+          ? `Root Zone (${level.display_name})`
+          : idx === data.levels.length - 1
           ? level.display_name
           : `${level.display_name} Zone`;
       dotStr += `    label="${zoneLabel}";\n`;
@@ -98,14 +104,24 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
         const breakReason = child.chain_break_info?.break_reason || "";
 
         if (ds) {
-          const digest = ds.digest ? ds.digest.slice(0, 8) + '…' : '';
-          const fill = childBreak && breakReason.toLowerCase().includes('dnskey') ? '#FFCDD2' : '#EDE7F6';
-          const col = childBreak && breakReason.toLowerCase().includes('dnskey') ? '#D32F2F' : '#673AB7';
-          dotStr +=
-            `    ds_for_${idx}_${idx + 1} [label=< <b>DS for ${child.display_name}</b><br/>Key ID ${ds.key_tag}<br/>Digest Type ${ds.digest_type}<br/>Digest: ${digest} >, shape=box style="rounded,filled" fillcolor="${fill}" color="${col}"];\n`;
+          const digest = ds.digest ? ds.digest.slice(0, 8) + "…" : "";
+          const fill =
+            childBreak && breakReason.toLowerCase().includes("dnskey")
+              ? "#FFCDD2"
+              : "#EDE7F6";
+          const col =
+            childBreak && breakReason.toLowerCase().includes("dnskey")
+              ? "#D32F2F"
+              : "#673AB7";
+          dotStr += `    ds_for_${idx}_${idx + 1} [label=< <b>DS for ${
+            child.display_name
+          }</b><br/>Key ID ${ds.key_tag}<br/>Digest Type ${
+            ds.digest_type
+          }<br/>Digest: ${digest} >, shape=box style="rounded,filled" fillcolor="${fill}" color="${col}"];\n`;
         } else {
-          dotStr +=
-            `    ds_for_${idx}_${idx + 1} [label=< <b>No DS for ${child.display_name}</b> >, shape=box style="rounded,filled" fillcolor="#FFEBEE" color="#C62828"];\n`;
+          dotStr += `    ds_for_${idx}_${idx + 1} [label=< <b>No DS for ${
+            child.display_name
+          }</b> >, shape=box style="rounded,filled" fillcolor="#FFEBEE" color="#C62828"];\n`;
         }
       }
 
@@ -124,32 +140,38 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
         const breakReason = child.chain_break_info?.break_reason || "";
 
         if (ds) {
-          dotStr +=
-            `    ds_rrset_${idx} -> ds_for_${idx}_${idx + 1} [color="#8E24AA"];\n`;
-          dotStr +=
-            `    keyset_${idx}:zsk -> ds_for_${idx}_${idx + 1} [label="signs" color="#4CAF50"];\n`;
-          const edgeStyle = childBreak && breakReason.toLowerCase().includes('dnskey')
-            ? 'color="#D32F2F" style=dashed'
-            : 'color="#4CAF50" penwidth=2';
-          dotStr +=
-            `    ds_for_${idx}_${idx + 1} -> keyset_${idx + 1}:ksk [label="validates" ${edgeStyle}];\n`;
+          dotStr += `    ds_rrset_${idx} -> ds_for_${idx}_${
+            idx + 1
+          } [color="#8E24AA"];\n`;
+          dotStr += `    keyset_${idx}:zsk -> ds_for_${idx}_${
+            idx + 1
+          } [label="signs" color="#4CAF50"];\n`;
+          const edgeStyle =
+            childBreak && breakReason.toLowerCase().includes("dnskey")
+              ? 'color="#D32F2F" style=dashed'
+              : 'color="#4CAF50" penwidth=2';
+          dotStr += `    ds_for_${idx}_${idx + 1} -> keyset_${
+            idx + 1
+          }:ksk [label="validates" ${edgeStyle}];\n`;
         } else {
-          dotStr +=
-            `    ds_rrset_${idx} -> ds_for_${idx}_${idx + 1} [style=dashed color="#C62828"];\n`;
+          dotStr += `    ds_rrset_${idx} -> ds_for_${idx}_${
+            idx + 1
+          } [style=dashed color="#C62828"];\n`;
         }
       }
-      dotStr +=
-        `    keyset_${idx}:ksk -> keyset_${idx}:zsk [style=dotted arrowhead=none color="#424242"];\n`;
+      dotStr += `    keyset_${idx}:ksk -> keyset_${idx}:zsk [style=dotted arrowhead=none color="#424242"];\n`;
 
-      dotStr += '  }\n';
+      dotStr += "  }\n";
     });
 
     // Delegation edges between zones
     for (let i = 0; i < data.levels.length - 1; i++) {
-      dotStr += `  apex_${i} -> apex_${i + 1} [label="delegates to" color="#FF9800" style=dashed];\n`;
+      dotStr += `  apex_${i} -> apex_${
+        i + 1
+      } [label="delegates to" color="#FF9800" style=dashed];\n`;
     }
 
-    dotStr += '}';
+    dotStr += "}";
     return dotStr;
   }, []);
 
@@ -181,10 +203,11 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
     fetchData();
   }, [fetchData, refreshTrigger]);
 
-
   if (!domain) {
     return (
-      <div className="text-center text-gray-500">Enter a domain to visualize</div>
+      <div className="text-center text-gray-500">
+        Enter a domain to visualize
+      </div>
     );
   }
 
@@ -199,19 +222,23 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
           <div className="w-full overflow-auto flex flex-col gap-4">
             {summary && (
               <div className="text-left">
-                <h2 className="font-semibold text-lg text-foreground">{domain}</h2>
+                <h2 className="font-semibold text-lg text-foreground">
+                  {domain}
+                </h2>
                 <p className="text-sm text-muted-foreground">
-                  Levels: {summary.total_levels} • Signed: {summary.signed_levels} •
-                  Breaks: {summary.chain_breaks?.length || 0}
+                  Levels: {summary.total_levels} • Signed:{" "}
+                  {summary.signed_levels} • Breaks:{" "}
+                  {summary.chain_breaks?.length || 0}
                 </p>
               </div>
             )}
-            <div className="w-full overflow-auto flex justify-center">
-              <Graphviz
-                dot={dot}
-                options={{ engine: "dot" }}
-                style={{ width: "100%" }}
-              />
+            <div
+              className=" overflow-auto flex justify-center"
+              style={{
+                transform: `scale(${GRAPH_SCALE})`,
+              }}
+            >
+              <Graphviz dot={dot} options={{ engine: "dot" }} />
             </div>
           </div>
         </CardContent>
