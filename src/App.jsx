@@ -162,6 +162,17 @@ const [signupMessageType, setSignupMessageType] = useState("");
     }
   };
 
+  const handleLogout = () => {
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.disableAutoSelect();
+    }
+    setUsername("");
+    setProfilePic(null);
+    setLoginEmail("");
+    setLoginPassword("");
+    setLoginOpen(true);
+  };
+
   //tooltip
   const selectedDate = new Date();
   selectedDate.setDate(selectedDate.getDate() - (MAX_DAYS - timeline));
@@ -297,6 +308,11 @@ const [signupMessageType, setSignupMessageType] = useState("");
               <User className="h-6 w-6 text-foreground" />
             )}
             <p className="text-lg text-foreground">{username}</p>
+            {username && (
+              <Button variant="secondary" size="sm" onClick={handleLogout}>
+                Log out
+              </Button>
+            )}
             <Button size="icon" variant="secondary" onClick={toggleTheme}>
               {theme === "dark" && <div className="text-primary">🌙</div>}
               {theme === "high-contrast" && <div className="text-primary">⚡</div>}
