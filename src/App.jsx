@@ -30,6 +30,7 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [username, setUsername] = useState("");
   const [profilePic, setProfilePic] = useState(null);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Theme state
   const [theme, setTheme] = useState("dark");
@@ -71,11 +72,30 @@ const [signupMessageType, setSignupMessageType] = useState("");
     document.body.appendChild(script);
   }, []);
 
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/session`, { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.loggedIn) {
+            setUsername(data.username);
+            setLoginOpen(false);
+          }
+        }
+      } catch (e) {
+        console.error("Session check failed", e);
+      }
+    };
+    checkSession();
+  }, []);
+
   const handleGoogleCredential = async (credential) => {
     try {
       const res = await fetch(`${API_BASE}/google-auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ token: credential }),
       });
       if (res.ok) {
@@ -93,16 +113,19 @@ const [signupMessageType, setSignupMessageType] = useState("");
   const handleLogin = async () => {
     setLoginError("");
     try {
-      const res = await fetch(
-        `${API_BASE}/login/${loginEmail}/${loginPassword}`
-      );
+      const res = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: loginEmail, password: loginPassword, remember: rememberMe }),
+      });
       if (!res.ok) {
         setLoginError("Unable to verify credentials.");
         return;
       }
       const data = await res.json();
-      const successVal = data.success.trim();
-      if (successVal !== "no") {
+      const successVal = data.success?.trim();
+      if (successVal && successVal !== "no") {
         setUsername(successVal);
         setProfilePic(null);
         setLoginError("");
@@ -162,6 +185,17 @@ const [signupMessageType, setSignupMessageType] = useState("");
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE}/logout`, { method: "POST", credentials: "include" });
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
+    setUsername("");
+    setProfilePic(null);
+    setLoginOpen(true);
+  };
+
   //tooltip
   const selectedDate = new Date();
   selectedDate.setDate(selectedDate.getDate() - (MAX_DAYS - timeline));
@@ -199,6 +233,17 @@ const [signupMessageType, setSignupMessageType] = useState("");
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
             />
+            <div className="flex items-center space-x-2">
+              <input
+                id="remember"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <label htmlFor="remember" className="text-sm">
+                Remember me
+              </label>
+            </div>
             <Button className="w-full h-12 text-lg" onClick={handleLogin}>
               Log in
             </Button>
@@ -302,6 +347,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
               {theme === "high-contrast" && <div className="text-primary">⚡</div>}
               {theme === "light" && <div className="text-primary">☀️</div>}
             </Button>
+            <Button variant="secondary" onClick={handleLogout}>Logout</Button>
           </div>
         </div>
       </header>
