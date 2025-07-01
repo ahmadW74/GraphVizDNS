@@ -27,8 +27,7 @@ data=[]
 with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "r") as file:
     data =[line.strip().split(":") for line in file.readlines()]
     print(data)
-GOOGLE_CLIENT_ID = "376144524625-gic1ubegimaldkggs0g4fg112i62lahd.apps.googleusercontent.com"
-
+GOOGLE_CLIENT_ID = '376144524625-v49q48ldo2lm4q6nvtoumehm1s4m7gdr.apps.googleusercontent.com'
 class DNSSECAnalyzer:
     def __init__(self):
         self.resolver = dns.resolver.Resolver()
@@ -712,5 +711,6 @@ def google_auth(payload: TokenPayload):
         file.write(f"\n{file_entry}")
 
     return {"success": name, "email": email, "picture": picture}
-    
+
+
 #uvicorn main:app --reload
