@@ -30,6 +30,27 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [username, setUsername] = useState("");
   const [profilePic, setProfilePic] = useState(null);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Load stored credentials if remember me was enabled
+  useEffect(() => {
+    const stored = localStorage.getItem("rememberMe");
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        if (data.expiry && Date.now() < data.expiry) {
+          setUsername(data.username || "");
+          setProfilePic(data.profilePic || null);
+          setLoginOpen(false);
+          setRememberMe(true);
+        } else {
+          localStorage.removeItem("rememberMe");
+        }
+      } catch {
+        localStorage.removeItem("rememberMe");
+      }
+    }
+  }, []);
 
   // Theme state
   const [theme, setTheme] = useState("dark");
@@ -84,6 +105,18 @@ const [signupMessageType, setSignupMessageType] = useState("");
         setProfilePic(data.picture || null);
         setLoginOpen(false);
         setSignupOpen(false);
+        if (rememberMe) {
+          localStorage.setItem(
+            "rememberMe",
+            JSON.stringify({
+              username: data.success,
+              profilePic: data.picture || null,
+              expiry: Date.now() + 24 * 60 * 60 * 1000,
+            })
+          );
+        } else {
+          localStorage.removeItem("rememberMe");
+        }
       }
     } catch (e) {
       console.error("Google auth failed", e);
@@ -107,6 +140,18 @@ const [signupMessageType, setSignupMessageType] = useState("");
         setProfilePic(null);
         setLoginError("");
         setLoginOpen(false);
+        if (rememberMe) {
+          localStorage.setItem(
+            "rememberMe",
+            JSON.stringify({
+              username: successVal,
+              profilePic: null,
+              expiry: Date.now() + 24 * 60 * 60 * 1000,
+            })
+          );
+        } else {
+          localStorage.removeItem("rememberMe");
+        }
       } else {
         setLoginError("Invalid email or password.");
       }
@@ -171,6 +216,8 @@ const [signupMessageType, setSignupMessageType] = useState("");
     setLoginEmail("");
     setLoginPassword("");
     setLoginOpen(true);
+    setRememberMe(false);
+    localStorage.removeItem("rememberMe");
   };
 
   //tooltip
@@ -210,6 +257,17 @@ const [signupMessageType, setSignupMessageType] = useState("");
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
             />
+            <div className="flex items-center space-x-2">
+              <input
+                id="rememberMe"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <label htmlFor="rememberMe" className="text-sm">
+                Remember me
+              </label>
+            </div>
             <Button className="w-full h-12 text-lg" onClick={handleLogin}>
               Log in
             </Button>
