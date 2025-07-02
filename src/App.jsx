@@ -156,7 +156,7 @@ export default function App() {
       } else {
         setLoginError("Invalid email or password.");
       }
-    } catch (err) {
+    } catch {
       setLoginError("Error verifying credentials.");
     }
   };
@@ -179,7 +179,7 @@ export default function App() {
         setSignupMessageType("error");
         setSignupMessage("Signup failed. Please try again.");
       }
-    } catch (err) {
+    } catch {
       setSignupMessageType("error");
       setSignupMessage("Error during signup. Please try later.");
     }
