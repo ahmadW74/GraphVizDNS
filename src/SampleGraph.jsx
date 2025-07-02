@@ -36,6 +36,8 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
       unsigned: { border: "#9E9E9E", apex: "#9E9E9E", apexFill: "#F5F5F5" },
     };
 
+    const rankPairs = [];
+
     let dotStr =
       "digraph DNSSEC_Chain {\n" +
       "  rankdir=LR;\n" +
@@ -70,12 +72,22 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
         (Array.isArray(level.records?.dnskey_records)
           ? level.records.dnskey_records.find((k) => k.role === "ZSK")
           : null);
-      const kskInfo = ksk
+
+      let kskInfo = ksk
         ? `Key ID ${ksk.key_tag} | Algo ${ksk.algorithm_name || ksk.algorithm}`
         : "";
-      const zskInfo = zsk
+      let zskInfo = zsk
         ? `Key ID ${zsk.key_tag} | Algo ${zsk.algorithm_name || zsk.algorithm}`
         : "";
+
+      let keysetFill = "#E3F2FD";
+      let keysetColor = "#2196F3";
+      if (level.chain_break_info?.has_chain_break) {
+        keysetFill = "#FFCDD2";
+        keysetColor = "#D32F2F";
+        kskInfo = "✗";
+        zskInfo = "✗";
+      }
 
       dotStr += `  subgraph cluster_${idx} {\n`;
       const zoneLabel =
@@ -90,7 +102,7 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
 
       dotStr += `    apex_${idx} [label="${level.display_name}" shape=rect fillcolor="${colors.apexFill}" color="${colors.apex}"];\n`;
 
-      dotStr += `    keyset_${idx} [shape=record fillcolor="#E3F2FD" color="#2196F3" label="{ {<ksk> KSK | ${kskInfo} } | {<zsk> ZSK | ${zskInfo} } }"];\n`;
+      dotStr += `    keyset_${idx} [shape=record fillcolor="${keysetFill}" color="${keysetColor}" label="{ {<ksk> KSK | ${kskInfo} } | {<zsk> ZSK | ${zskInfo} } }"];\n`;
 
       const hasDNSKEY = Array.isArray(level.records?.dnskey_records) && level.records.dnskey_records.length > 0;
 
@@ -110,26 +122,28 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
         const ds = child.records?.ds_records?.[0];
         const childBreak = child.chain_break_info?.has_chain_break;
         const breakReason = child.chain_break_info?.break_reason || "";
+        const isTld = child.domain_type === "tld" || idx + 1 === 1;
 
-        if (ds) {
-          const digest = ds.digest ? ds.digest.slice(0, 8) + "…" : "";
+        if (ds || isTld) {
+          const digest = ds?.digest ? ds.digest.slice(0, 8) + "…" : "";
           const fill =
-            childBreak && breakReason.toLowerCase().includes("dnskey")
+            isTld
+              ? "#EDE7F6"
+              : childBreak && breakReason.toLowerCase().includes("dnskey")
               ? "#FFCDD2"
               : "#EDE7F6";
           const col =
-            childBreak && breakReason.toLowerCase().includes("dnskey")
+            isTld
+              ? "#673AB7"
+              : childBreak && breakReason.toLowerCase().includes("dnskey")
               ? "#D32F2F"
               : "#673AB7";
-          dotStr += `    ds_for_${idx}_${idx + 1} [label=< <b>DS for ${
-            child.display_name
-          }</b><br/>Key ID ${ds.key_tag}<br/>Digest Type ${
-            ds.digest_type
-          }<br/>Digest: ${digest} >, shape=box style="rounded,filled" fillcolor="${fill}" color="${col}"];\n`;
+          const label = ds
+            ? `<b>DS for ${child.display_name}</b><br/>Key ID ${ds.key_tag}<br/>Digest Type ${ds.digest_type}<br/>Digest: ${digest}`
+            : `<b>DS for ${child.display_name}</b>`;
+          dotStr += `    ds_for_${idx}_${idx + 1} [label=< ${label} >, shape=box style="rounded,filled" fillcolor="${fill}" color="${col}"];\n`;
         } else {
-          dotStr += `    ds_for_${idx}_${idx + 1} [label=< <b>No DS for ${
-            child.display_name
-          }</b> >, shape=box style="rounded,filled" fillcolor="#FFEBEE" color="#C62828"];\n`;
+          dotStr += `    ds_for_${idx}_${idx + 1} [label=< <b>No DS for ${child.display_name}</b> >, shape=box style="rounded,filled" fillcolor="#FFEBEE" color="#C62828"];\n`;
         }
       }
 
@@ -152,8 +166,9 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
         const ds = child.records?.ds_records?.[0];
         const childBreak = child.chain_break_info?.has_chain_break;
         const breakReason = child.chain_break_info?.break_reason || "";
+        const isTld = child.domain_type === "tld" || idx + 1 === 1;
 
-        if (ds) {
+        if (ds || isTld) {
           dotStr += `    ds_rrset_${idx} -> ds_for_${idx}_${
             idx + 1
           } [color="#8E24AA"];\n`;
@@ -161,12 +176,15 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
             idx + 1
           } [label="signs" color="#4CAF50"];\n`;
           const edgeStyle =
-            childBreak && breakReason.toLowerCase().includes("dnskey")
+            isTld
+              ? 'color="#4CAF50" penwidth=2'
+              : childBreak && breakReason.toLowerCase().includes("dnskey")
               ? 'color="#D32F2F" style=dashed'
               : 'color="#4CAF50" penwidth=2';
           dotStr += `    ds_for_${idx}_${idx + 1} -> keyset_${
             idx + 1
           }:ksk [label="validates" ${edgeStyle}];\n`;
+          rankPairs.push(`ds_for_${idx}_${idx + 1}; keyset_${idx + 1}`);
         } else {
           dotStr += `    ds_rrset_${idx} -> ds_for_${idx}_${
             idx + 1
@@ -184,6 +202,10 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
         i + 1
       } [label="delegates to" color="#FF9800" style=dashed];\n`;
     }
+
+    rankPairs.forEach((p) => {
+      dotStr += `  {rank=same; ${p};}\n`;
+    });
 
     dotStr += "}";
     return dotStr;
@@ -249,7 +271,7 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
             <div
               className=" overflow-hidden flex justify-center"
               style={{
-                transform: `scale(2)`,
+                transform: `scale(${GRAPH_SCALE})`,
               }}
             >
               <ErrorBoundary>
