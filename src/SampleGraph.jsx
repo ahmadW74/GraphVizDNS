@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Graphviz from "graphviz-react";
+import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
@@ -13,7 +14,7 @@ import { API_BASE } from "@/lib/api";
  * @param {number} [props.refreshTrigger] - Incrementing value to trigger reload
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
  */
-const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
+const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
@@ -90,9 +91,16 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
       dotStr += `    apex_${idx} [label="${level.display_name}" shape=rect fillcolor="${colors.apexFill}" color="${colors.apex}"];\n`;
 
       dotStr += `    keyset_${idx} [shape=record fillcolor="#E3F2FD" color="#2196F3" label="{ {<ksk> KSK | ${kskInfo} } | {<zsk> ZSK | ${zskInfo} } }"];\n`;
+
+      const hasDNSKEY = Array.isArray(level.records?.dnskey_records) && level.records.dnskey_records.length > 0;
+
       if (idx !== 0) {
-        dotStr += `    dnskey_rrset_${idx} [label="DNSKEY Records" shape=ellipse fillcolor="#BBDEFB" color="#1976D2"];\n`;
-        dotStr += `    {rank=same; dnskey_rrset_${idx}; keyset_${idx};}\n`;
+        if (hasDNSKEY) {
+          dotStr += `    dnskey_rrset_${idx} [label="DNSKEY Records" shape=ellipse fillcolor="#BBDEFB" color="#1976D2"];\n`;
+          dotStr += `    {rank=same; dnskey_rrset_${idx}; keyset_${idx};}\n`;
+        } else {
+          dotStr += `    dnskey_rrset_${idx} [label="No DNSKEY" shape=ellipse style=dashed color="#D32F2F"];\n`;
+        }
       }
 
       dotStr += `    ds_rrset_${idx} [label="DS Records" shape=ellipse fillcolor="#E1BEE7" color="#8E24AA"];\n`;
@@ -126,11 +134,17 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
       }
 
       if (idx === 0) {
-        dotStr += `    apex_${idx} -> keyset_${idx}:ksk [label="has DNSKEYs" color="#1976D2"];\n`;
+        if (hasDNSKEY) {
+          dotStr += `    apex_${idx} -> keyset_${idx}:ksk [label="has DNSKEYs" color="#1976D2"];\n`;
+        }
       } else {
-        dotStr += `    apex_${idx} -> dnskey_rrset_${idx} [label="has" color="#1976D2"];\n`;
-        dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:ksk [color="#1976D2"];\n`;
-        dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:zsk [color="#1976D2"];\n`;
+        if (hasDNSKEY) {
+          dotStr += `    apex_${idx} -> dnskey_rrset_${idx} [label="has" color="#1976D2"];\n`;
+          dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:ksk [color="#1976D2"];\n`;
+          dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:zsk [color="#1976D2"];\n`;
+        } else {
+          dotStr += `    apex_${idx} -> keyset_${idx} [style=dashed color="#D32F2F"];\n`;
+        }
       }
       dotStr += `    apex_${idx} -> ds_rrset_${idx} [label="has" color="#8E24AA"];\n`;
       if (idx < data.levels.length - 1) {
@@ -238,7 +252,9 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
                 transform: `scale(2)`,
               }}
             >
-              <Graphviz dot={dot} options={{ engine: "dot" }} />
+              <ErrorBoundary>
+                <Graphviz dot={dot} options={{ engine: "dot" }} />
+              </ErrorBoundary>
             </div>
           </div>
         </CardContent>
