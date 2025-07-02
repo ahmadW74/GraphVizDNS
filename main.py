@@ -28,6 +28,7 @@ with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "r") as file:
     data =[line.strip().split(":") for line in file.readlines()]
     print(data)
 GOOGLE_CLIENT_ID = '376144524625-v49q48ldo2lm4q6nvtoumehm1s4m7gdr.apps.googleusercontent.com'
+print(GOOGLE_CLIENT_ID)
 class DNSSECAnalyzer:
     def __init__(self):
         self.resolver = dns.resolver.Resolver()
@@ -689,6 +690,7 @@ def google_auth(payload: TokenPayload):
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Google client ID not configured")
     try:
+        print("ssx")
         idinfo = id_token.verify_oauth2_token(
             payload.token,
             google_requests.Request(),
@@ -698,6 +700,7 @@ def google_auth(payload: TokenPayload):
         name = idinfo.get("name", email)
         picture = idinfo.get("picture")
     except Exception:
+        print("ss")
         raise HTTPException(status_code=400, detail="Invalid token")
 
     for entry in data:

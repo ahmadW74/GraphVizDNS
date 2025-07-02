@@ -11,7 +11,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import SampleGraph from "./SampleGraph.jsx";
-import DNSSECVisualizer from "./DNSGraph.jsx";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_BASE } from "@/lib/api";
 export default function App() {
@@ -59,8 +59,8 @@ export default function App() {
   const [signupName, setSignupName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
-const [signupMessage, setSignupMessage] = useState("");
-const [signupMessageType, setSignupMessageType] = useState("");
+  const [signupMessage, setSignupMessage] = useState("");
+  const [signupMessageType, setSignupMessageType] = useState("");
 
   // Google OAuth initialization
   useEffect(() => {
@@ -70,7 +70,8 @@ const [signupMessageType, setSignupMessageType] = useState("");
     script.onload = () => {
       if (window.google) {
         window.google.accounts.id.initialize({
-          client_id: "YOUR_GOOGLE_CLIENT_ID",
+          client_id:
+            "376144524625-v49q48ldo2lm4q6nvtoumehm1s4m7gdr.apps.googleusercontent.com",
           callback: (response) => handleGoogleCredential(response.credential),
         });
         const loginDiv = document.getElementById("googleSignIn");
@@ -94,7 +95,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
 
   const handleGoogleCredential = async (credential) => {
     try {
-      const res = await fetch(`${API_BASE}/google-auth`, {
+      const res = await fetch(`http://127.0.0.1:8000/google-auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: credential }),
@@ -127,7 +128,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
     setLoginError("");
     try {
       const res = await fetch(
-        `${API_BASE}/login/${loginEmail}/${loginPassword}`
+        `http://127.0.0.1:8000/login/${loginEmail}/${loginPassword}`
       );
       if (!res.ok) {
         setLoginError("Unable to verify credentials.");
@@ -164,7 +165,7 @@ const [signupMessageType, setSignupMessageType] = useState("");
     setSignupMessage("");
     try {
       const res = await fetch(
-        `${API_BASE}/signup/${signupEmail}/${signupPassword}/${signupName}`
+        `http://127.0.0.1:8000/signup/${signupEmail}/${signupPassword}/${signupName}`
       );
       if (res.ok) {
         setSignupMessageType("success");
@@ -227,7 +228,11 @@ const [signupMessageType, setSignupMessageType] = useState("");
     timeline === MAX_DAYS ? "Today" : selectedDate.toLocaleDateString();
 
   return (
-    <div className={`${theme !== "light" ? theme : ""} bg-background text-foreground min-h-screen flex flex-col text-base lg:text-lg`}>
+    <div
+      className={`${
+        theme !== "light" ? theme : ""
+      } bg-background text-foreground min-h-screen flex flex-col text-base lg:text-lg`}
+    >
       {/* Login dialog */}
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="sm:max-w-lg text-base space-y-6">
@@ -373,7 +378,9 @@ const [signupMessageType, setSignupMessageType] = useState("");
             )}
             <Button size="icon" variant="secondary" onClick={toggleTheme}>
               {theme === "dark" && <div className="text-primary">🌙</div>}
-              {theme === "high-contrast" && <div className="text-primary">⚡</div>}
+              {theme === "high-contrast" && (
+                <div className="text-primary">⚡</div>
+              )}
               {theme === "light" && <div className="text-primary">☀️</div>}
             </Button>
           </div>
@@ -432,4 +439,3 @@ const [signupMessageType, setSignupMessageType] = useState("");
     </div>
   );
 }
-
