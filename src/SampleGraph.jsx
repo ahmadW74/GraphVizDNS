@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Graphviz from "graphviz-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,10 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
+  const [graphData, setGraphData] = useState(null);
+  const [selectedInfo, setSelectedInfo] = useState(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const graphRef = useRef(null);
 
   /**
    * Build a Graphviz dot string from API data.
@@ -153,10 +157,34 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
     return dotStr;
   }, []);
 
+  const getNodeInfo = useCallback(
+    (id) => {
+      if (!graphData) return null;
+
+      if (id.startsWith("apex_")) {
+        const idx = parseInt(id.split("_")[1], 10);
+        const level = graphData.levels?.[idx];
+        if (level) return { type: "zone", level };
+      }
+
+      if (id.startsWith("ds_for_")) {
+        const parts = id.split("_");
+        const childIdx = parseInt(parts[3], 10);
+        const level = graphData.levels?.[childIdx];
+        const ds = level?.records?.ds_records?.[0];
+        if (ds) return { type: "ds", level, ds };
+      }
+
+      return null;
+    },
+    [graphData]
+  );
+
   const fetchData = useCallback(async () => {
     if (!domain) {
       setDot("digraph DNSSEC {}");
       setSummary(null);
+      setGraphData(null);
       return;
     }
 
@@ -168,10 +196,12 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
       const json = await res.json();
       setDot(buildDot(json));
       setSummary(json.chain_summary || null);
+      setGraphData(json);
     } catch (err) {
       console.error("Failed to fetch DNSSEC chain", err);
       setDot("digraph DNSSEC {}");
       setSummary(null);
+      setGraphData(null);
     } finally {
       setLoading(false);
     }
@@ -180,6 +210,40 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
   useEffect(() => {
     fetchData();
   }, [fetchData, refreshTrigger]);
+
+  // Attach click handlers to graph nodes when DOT or data changes
+  useEffect(() => {
+    const container = graphRef.current;
+    if (!container) return;
+    const svg = container.querySelector("svg");
+    if (!svg) return;
+
+    const nodes = Array.from(svg.querySelectorAll("g.node"));
+    nodes.forEach((node) => {
+      const title = node.querySelector("title");
+      if (!title) return;
+      const id = title.textContent;
+      const handler = () => {
+        const info = getNodeInfo(id);
+        if (info) {
+          setSelectedInfo(info);
+          setPanelOpen(true);
+        }
+      };
+      node.style.cursor = "pointer";
+      node.addEventListener("click", handler);
+      node.__handler = handler;
+    });
+
+    return () => {
+      nodes.forEach((node) => {
+        if (node.__handler) {
+          node.removeEventListener("click", node.__handler);
+          delete node.__handler;
+        }
+      });
+    };
+  }, [dot, graphData, getNodeInfo]);
 
 
   if (!domain) {
@@ -195,8 +259,8 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
   return (
     <div className="relative">
       <Card className="w-full bg-card border-border">
-        <CardContent className="relative px-6 py-6 lg:px-8 lg:py-8 flex justify-center overflow-auto">
-          <div className="w-full overflow-auto flex flex-col gap-4">
+        <CardContent className="relative px-6 py-6 lg:px-8 lg:py-8 flex justify-center">
+          <div className="w-full flex flex-col gap-4">
             {summary && (
               <div className="text-left">
                 <h2 className="font-semibold text-lg text-foreground">{domain}</h2>
@@ -206,7 +270,7 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
                 </p>
               </div>
             )}
-            <div className="w-full overflow-auto flex justify-center">
+            <div className="w-full flex justify-center overflow-hidden" ref={graphRef}>
               <Graphviz
                 dot={dot}
                 options={{ engine: "dot" }}
@@ -225,6 +289,60 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
       >
         <RotateCcw className="h-6 w-6" />
       </Button>
+
+      <div
+        className={`fixed right-0 top-0 h-full w-72 bg-popover text-popover-foreground border-l border-border shadow-lg transform transition-transform ${panelOpen ? "translate-x-0" : "translate-x-full"}`}
+      >
+        <div className="flex items-center justify-between p-4 border-b">
+          <h3 className="font-semibold">Details</h3>
+          <button onClick={() => setPanelOpen(false)} className="text-sm">✕</button>
+        </div>
+        {selectedInfo && (
+          <div className="p-4 space-y-2 text-sm overflow-y-auto">
+            {selectedInfo.type === "zone" && (
+              <>
+                <div>
+                  <strong>Zone:</strong> {selectedInfo.level.display_name}
+                </div>
+                {selectedInfo.level.key_hierarchy?.ksk_keys?.map((k, idx) => (
+                  <div key={`ksk-${idx}`}>
+                    <strong>KSK:</strong> {k.key_tag} ({k.algorithm_name})
+                  </div>
+                ))}
+                {selectedInfo.level.key_hierarchy?.zsk_keys?.map((k, idx) => (
+                  <div key={`zsk-${idx}`}>
+                    <strong>ZSK:</strong> {k.key_tag} ({k.algorithm_name})
+                  </div>
+                ))}
+              </>
+            )}
+            {selectedInfo.type === "ds" && (
+              <>
+                <div>
+                  <strong>DS for:</strong> {selectedInfo.level.display_name}
+                </div>
+                <div>
+                  <strong>Key ID:</strong> {selectedInfo.ds.key_tag}
+                </div>
+                <div>
+                  <strong>Algorithm:</strong> {selectedInfo.ds.algorithm_name || selectedInfo.ds.algorithm || "N/A"}
+                </div>
+                <div>
+                  <strong>Digest Type:</strong> {selectedInfo.ds.digest_type_name || selectedInfo.ds.digest_type || "N/A"}
+                </div>
+                {selectedInfo.ds.digest && (
+                  <div>
+                    <strong>Digest:</strong> {selectedInfo.ds.digest}
+                  </div>
+                )}
+                <div>
+                  <strong>Last validated:</strong> {selectedInfo.ds.last_validated || "N/A"}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
