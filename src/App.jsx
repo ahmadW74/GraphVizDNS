@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
   DialogContent,
@@ -12,15 +11,15 @@ import {
 } from "@/components/ui/dialog";
 import SampleGraph from "./SampleGraph.jsx";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_BASE } from "@/lib/api";
 export default function App() {
   // UI state
   const [domain, setDomain] = useState("");
   const [currentDomain, setCurrentDomain] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const MAX_DAYS = 1825;
-  const [timeline, setTimeline] = useState(MAX_DAYS);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [loginOpen, setLoginOpen] = useState(true);
   const [signupOpen, setSignupOpen] = useState(false);
 
@@ -221,11 +220,8 @@ export default function App() {
     localStorage.removeItem("rememberMe");
   };
 
-  //tooltip
-  const selectedDate = new Date();
-  selectedDate.setDate(selectedDate.getDate() - (MAX_DAYS - timeline));
-  const tooltipLabel =
-    timeline === MAX_DAYS ? "Today" : selectedDate.toLocaleDateString();
+  // selected date label
+  const tooltipLabel = new Date(selectedDate).toLocaleDateString();
 
   return (
     <div
@@ -409,24 +405,15 @@ export default function App() {
             </Button>
           </div>
 
-          {/*Timeline*/}
-          <div className="relative mb-6 h-6 lg:h-8">
-            <div className="absolute -top-10 left-0 w-full pointer-events-none">
-              <div
-                style={{ left: `${(timeline / MAX_DAYS) * 100}%` }}
-                className="absolute transform -translate-x-1/2 bg-popover text-popover-foreground text-sm lg:text-base px-3 py-2 rounded shadow"
-              >
-                {tooltipLabel}
-              </div>
-            </div>
-            <Slider
-              min={0}
-              max={MAX_DAYS}
-              step={1}
-              value={[timeline]}
-              onValueChange={(v) => setTimeline(v[0])}
-              className="h-full"
+          {/*Date Picker*/}
+          <div className="mb-6 flex items-center space-x-4">
+            <Input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="h-10"
             />
+            <span className="text-sm lg:text-base">{tooltipLabel}</span>
           </div>
           <SampleGraph
             domain={currentDomain}
