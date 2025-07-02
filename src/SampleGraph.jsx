@@ -219,7 +219,7 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
     <div className="relative">
       <Card className="w-full bg-card border-border">
         <CardContent className="relative px-6 py-6 lg:px-8 lg:py-8 flex justify-center overflow-auto">
-          <div className="w-full overflow-auto flex flex-col gap-4">
+          <div className="w-full overflow-visible flex flex-col gap-4">
             {summary && (
               <div className="text-left">
                 <h2 className="font-semibold text-lg text-foreground">
@@ -233,9 +233,9 @@ const SampleGraph = ({ domain, refreshTrigger, theme, onRefresh }) => {
               </div>
             )}
             <div
-              className=" overflow-auto flex justify-center"
+              className=" overflow-visible flex justify-center"
               style={{
-                transform: `scale(${GRAPH_SCALE})`,
+                transform: `scale(2)`,
               }}
             >
               <Graphviz dot={dot} options={{ engine: "dot" }} />
