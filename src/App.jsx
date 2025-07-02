@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +21,6 @@ export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const MAX_DAYS = 1825;
   const [timeline, setTimeline] = useState(MAX_DAYS);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const playbackRef = useRef(null);
   const [loginOpen, setLoginOpen] = useState(true);
   const [signupOpen, setSignupOpen] = useState(false);
 
@@ -222,29 +220,6 @@ export default function App() {
     setRememberMe(false);
     localStorage.removeItem("rememberMe");
   };
-
-  // playback timeline effect
-  useEffect(() => {
-    if (isPlaying) {
-      playbackRef.current = setInterval(() => {
-        setTimeline((t) => {
-          if (t >= MAX_DAYS) {
-            clearInterval(playbackRef.current);
-            playbackRef.current = null;
-            setIsPlaying(false);
-            return MAX_DAYS;
-          }
-          return t + 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (playbackRef.current) {
-        clearInterval(playbackRef.current);
-        playbackRef.current = null;
-      }
-    };
-  }, [isPlaying]);
 
   //tooltip
   const selectedDate = new Date();
@@ -452,24 +427,6 @@ export default function App() {
               onValueChange={(v) => setTimeline(v[0])}
               className="h-full"
             />
-            <div className="flex gap-2 mt-3 justify-center">
-              <Button
-                size="icon"
-                variant="secondary"
-                onClick={() => setIsPlaying((p) => !p)}
-              >
-                {isPlaying ? "⏸" : "▶"}
-              </Button>
-              <Button
-                size="icon"
-                variant="secondary"
-                onClick={() =>
-                  setTimeline((t) => Math.min(t + 1, MAX_DAYS))
-                }
-              >
-                ⏭
-              </Button>
-            </div>
           </div>
           <SampleGraph
             domain={currentDomain}
